@@ -207,56 +207,11 @@ export function hasProjectSkills(cwd?: string): boolean {
 }
 
 /**
- * Determine the update/check scope via interactive prompt or auto-detection.
+ * Keep update/check scope explicit and consistent with add, list and restore.
  */
 export async function resolveUpdateScope(options: UpdateCheckOptions): Promise<UpdateScope> {
-  if (options.skills && options.skills.length > 0) {
-    if (options.global) return 'global';
-    if (options.project) return 'project';
-    return 'both';
-  }
-
-  if (options.global && options.project) {
-    return 'both';
-  }
-  if (options.global) {
-    return 'global';
-  }
-  if (options.project) {
-    return 'project';
-  }
-
-  if (options.yes || !process.stdin.isTTY) {
-    return hasProjectSkills() ? 'project' : 'global';
-  }
-
-  const scope = await p.select({
-    message: 'Update scope',
-    options: [
-      {
-        value: 'project' as UpdateScope,
-        label: 'Project',
-        hint: 'Update skills in current directory',
-      },
-      {
-        value: 'global' as UpdateScope,
-        label: 'Global',
-        hint: 'Update skills in home directory',
-      },
-      {
-        value: 'both' as UpdateScope,
-        label: 'Both',
-        hint: 'Update all skills',
-      },
-    ],
-  });
-
-  if (p.isCancel(scope)) {
-    p.cancel('Cancelled');
-    process.exit(0);
-  }
-
-  return scope as UpdateScope;
+  if (options.global && options.project) return 'both';
+  return options.global ? 'global' : 'project';
 }
 
 export function matchesSkillFilter(name: string, filter?: string[]): boolean {

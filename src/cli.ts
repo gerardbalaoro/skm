@@ -153,7 +153,8 @@ ${BOLD}Updates:${RESET}
 ${BOLD}Update Options:${RESET}
   -g, --global           Update global skills only
   -p, --project          Update project skills only
-  -y, --yes              Skip scope prompt (auto-detect: project if in a project, else global)
+  -y, --yes              Skip confirmation prompts
+  Default scope is project; -g selects global, -g -p selects both
 
 ${BOLD}Project:${RESET}
   experimental_install Restore skills from skills-lock.json (alias: install, i)

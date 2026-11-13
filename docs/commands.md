@@ -270,14 +270,18 @@ Check installed skills for available updates without reinstalling them:
 npx skills check
 ```
 
+The default scope is project. Use `-g` for global skills, including checks for named skills.
 It also reports project skills whose installed files differ from the content hash in
 `skills-lock.json` (`has local changes`). It exits with code 1 when any skill has an
 update or local changes, so it can gate CI.
 
 ## `skills update`
 
+Update project skills by default, including named skills. Use `-g` for global skills
+or `-g -p` for both scopes. Scripts that rely on scope detection must pass their scope explicitly.
+
 ```bash
-# Update all skills (interactive scope prompt)
+# Update project skills (default scope)
 npx skills update
 
 # Update a single skill by name
@@ -290,16 +294,16 @@ npx skills update frontend-design web-design-guidelines
 npx skills update -g
 npx skills update -p
 
-# Non-interactive (auto-detects scope: project if in a project, else global)
+# Non-interactive project update (use -g for global)
 npx skills update -y
 ```
 
-| Option          | Description                                                               |
-| --------------- | ------------------------------------------------------------------------- |
-| `-g, --global`  | Only update global skills                                                 |
-| `-p, --project` | Only update project skills                                                |
-| `-y, --yes`     | Skip scope prompt (auto-detect: project if in a project dir, else global) |
-| `[skills...]`   | Update specific skills by name instead of all                             |
+| Option          | Description                                          |
+| --------------- | ---------------------------------------------------- |
+| `-g, --global`  | Only update global skills                            |
+| `-p, --project` | Only update project skills                           |
+| `-y, --yes`     | Skip confirmation prompts; scope defaults to project |
+| `[skills...]`   | Update specific skills by name instead of all        |
 
 A skill installed from a direct download is downloaded again and reinstalled when its content hash differs from the lock, or when its folder is missing.
 

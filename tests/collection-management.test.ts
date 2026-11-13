@@ -185,4 +185,26 @@ describe('collection management', { timeout: 30_000 }, () => {
     expect(after).toMatchObject({ commit: pinned, skillName: 'alpha', ref });
     expect(JSON.parse(readFileSync(globalLockPath(), 'utf8')).skills.alpha).toBeUndefined();
   });
+  it('named update stays in project scope unless -g is passed', () => {
+    mkdirSync(join(home, '.local', 'state', 'skills'), { recursive: true });
+    writeFileSync(
+      globalLockPath(),
+      JSON.stringify({
+        version: 3,
+        skills: {
+          alpha: {
+            source: 'example/absent',
+            sourceType: 'github',
+            sourceUrl: 'https://github.com/example/absent',
+            skillPath: 'SKILL.md',
+            skillFolderHash: 'x',
+          },
+        },
+      })
+    );
+    const result = cli(['update', 'alpha', '-y']);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('No installed skills found matching');
+    expect(result.stdout).not.toContain('Fetching');
+  });
 });
