@@ -163,6 +163,9 @@ ${BOLD}Prune Options:${RESET}
   --dry-run              Preview confirmed deletions without removing
   -y, --yes              Confirm removal (local edits are retained)
 
+${BOLD}List Options:${RESET}
+  -i, --interactive      Search, inspect, check, update and remove skills
+
 ${BOLD}Project:${RESET}
   experimental_install Restore skills from skills-lock.json (alias: install, i)
   init [name]          Initialize a skill (creates <name>/SKILL.md or ./SKILL.md)

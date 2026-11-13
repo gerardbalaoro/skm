@@ -8,11 +8,13 @@ import { sanitizeMetadata } from './sanitize.ts';
 import { getAllLockedSkills } from './skill-lock.ts';
 import { getLockedSkillState, readLocalLock } from './local-lock.ts';
 import { BOLD, CYAN, DIM, RESET, YELLOW } from './color.ts';
+import { runManager } from './manage.ts';
 
 interface ListOptions {
   global?: boolean;
   agent?: string[];
   json?: boolean;
+  interactive?: boolean;
 }
 
 interface ListLockEntry {
@@ -62,10 +64,16 @@ export function parseListOptions(args: string[]): ListOptions {
   const { values, errors } = parseCliArgs(args, {
     global: { type: 'boolean', short: 'g' },
     json: { type: 'boolean' },
+    interactive: { type: 'boolean', short: 'i' },
     agent: { type: 'list', short: 'a', value: 'an agent name' },
   });
   throwFirstError(errors);
-  return { global: values.global, json: values.json, agent: values.agent };
+  return {
+    global: values.global,
+    json: values.json,
+    agent: values.agent,
+    interactive: values.interactive,
+  };
 }
 
 /** Listing is read-only, so an unusable lock only costs source info. */
@@ -101,6 +109,22 @@ export async function runList(args: string[]): Promise<void> {
     }
 
     agentFilter = options.agent as AgentType[];
+  }
+
+  if (options.interactive) {
+    if (options.json) {
+      console.error(
+        formatError(
+          diagnostics.SKILLS_MANAGEMENT_FAILED({
+            reason: 'Cannot combine --interactive and --json.',
+          })
+        )
+      );
+      process.exitCode = 1;
+      return;
+    }
+    await runManager(scope, agentFilter);
+    return;
   }
 
   const installedSkills = await listInstalledSkills({

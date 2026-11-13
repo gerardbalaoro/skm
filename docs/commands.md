@@ -247,6 +247,57 @@ the lock's content hash is marked `modified`. A skill with no lock entry is mark
 `untracked`. A locked skill that is not on disk is listed under `Missing`. With
 `--json`, each skill has a `status`: `tracked`, `modified`, `untracked`, or `missing`.
 
+### Interactive Management
+
+```bash
+# Project skills
+pnpm dev list -i
+
+# Global skills
+pnpm dev list -g --interactive
+```
+
+Interactive mode uses Ink for a persistent, full-screen terminal interface.
+The Installed, Discover, and Sources tabs share a skill list and details pane.
+Wide terminals show the panes side by side. Narrow terminals stack them.
+Closing the manager restores the previous terminal screen. Search counts and activity
+appear only in Discover. Press `?` for the full shortcut list.
+
+| Key                           | Action                                                            |
+| ----------------------------- | ----------------------------------------------------------------- |
+| Up/Down or j/k                | Move through the list and update details                          |
+| Tab / Shift+Tab or Left/Right | Switch tabs and preserve the highlighted item                     |
+| /                             | Filter Installed or Sources, or enter a Discover query            |
+| Enter                         | Apply a query or open the selected item's actions                 |
+| Space                         | Select multiple installed skills or source groups                 |
+| PgUp / PgDn                   | Scroll details or action output                                   |
+| c / u / d                     | Check, update, or remove the selection                            |
+| i                             | Read SKILL.md, or install a Discover result                       |
+| g                             | Switch project/global scope                                       |
+| r                             | Refresh the inventory                                             |
+| Escape                        | Close a dialog, return to browsing, or cancel a running operation |
+| ?                             | Show keyboard help                                                |
+| q or Ctrl+C                   | Quit (use Escape first when editing text or in a dialog)          |
+
+Discover searches skills.sh after you submit a query. Browsing Installed and Sources
+uses local records. Installs, updates, and removals require confirmation, with Cancel
+selected by default. Action output stays inside the manager. A source action applies
+to that source's skills in the selected scope. Removal includes all agents in that scope.
+
+The default pane shows a brief description and any known source and version or revision.
+The full description remains available under **Show full details**.
+Routine tracking labels and missing metadata stay hidden. **Show full details** includes
+tracking status, Git refs, commits, content hashes, agents, and the resolved local location. A content hash does not
+identify a release version. Missing information appears as **Not recorded**.
+
+`Untracked` means no entry exists in the selected scope's skills lockfile. It does not
+describe Git status. Only this CLI's project or global lockfile supplies source and
+version information. Metadata from other tools is not used.
+
+`--agent` filters the view but does not restrict update or removal targets.
+Interactive mode requires terminal input and output. It cannot be combined with `--json`.
+Text output remains the default.
+
 ## `skills find`
 
 Search for skills interactively or by keyword.
@@ -481,19 +532,19 @@ When two skills share a name, sync applies these rules in order:
 3. Two packages at the same level shipping the same skill name install neither.
    Pick one with `--exclude <package>#<skill>`.
 
-| Option                    | Description                                                   |
-| ------------------------- | ------------------------------------------------------------- |
-| `-a, --agent <agents...>` | Select agent directories                                      |
-| `-y, --yes`               | Skip confirmation prompts                                     |
-| `--dry-run`               | Show the plan without installing or removing skills           |
-| `--copy`                  | Copy packaged skills instead of linking them                  |
-| `--no-cleanup`            | Keep skills that are no longer provided                       |
-| `--no-remote`             | Skip installing and removing remote skills                    |
-| `--include <patterns...>` | Include skills by package or `package#skill` pattern          |
-| `--exclude <patterns...>` | Exclude skills by package or `package#skill` pattern          |
-| `-r, --recursive`         | Also read dependencies of workspace packages                  |
-| `--frozen-lockfile`       | Fail instead of changing `skills-lock.json` (default in CI)   |
-| `--no-frozen-lockfile`    | Allow `skills-lock.json` to change in CI                      |
+| Option                    | Description                                                 |
+| ------------------------- | ----------------------------------------------------------- |
+| `-a, --agent <agents...>` | Select agent directories                                    |
+| `-y, --yes`               | Skip confirmation prompts                                   |
+| `--dry-run`               | Show the plan without installing or removing skills         |
+| `--copy`                  | Copy packaged skills instead of linking them                |
+| `--no-cleanup`            | Keep skills that are no longer provided                     |
+| `--no-remote`             | Skip installing and removing remote skills                  |
+| `--include <patterns...>` | Include skills by package or `package#skill` pattern        |
+| `--exclude <patterns...>` | Exclude skills by package or `package#skill` pattern        |
+| `-r, --recursive`         | Also read dependencies of workspace packages                |
+| `--frozen-lockfile`       | Fail instead of changing `skills-lock.json` (default in CI) |
+| `--no-frozen-lockfile`    | Allow `skills-lock.json` to change in CI                    |
 
 The include/exclude filters apply to both packaged and remote skills. For remote
 skills, the package pattern matches the package declaring the entry (`.` for the

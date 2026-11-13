@@ -299,6 +299,11 @@ describe('collection management', { timeout: 30_000 }, () => {
     expect(cli(['prune', '-y']).stderr).toContain('local changes cannot be verified');
     expect(lock().skills.alpha).toBeDefined();
   });
+  it('rejects interactive list without a terminal and conflicting JSON mode', () => {
+    expect(cli(['list', '-i']).exitCode).toBe(1);
+    expect(cli(['list', '--interactive']).stderr).toContain('requires a terminal');
+    expect(cli(['list', '-i', '--json']).stderr).toContain('Cannot combine');
+  });
   it('named update stays in project scope unless -g is passed', () => {
     mkdirSync(join(home, '.local', 'state', 'skills'), { recursive: true });
     writeFileSync(

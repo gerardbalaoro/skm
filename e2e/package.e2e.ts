@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import * as tar from 'tar';
 import { describe, expect, inject, it } from 'vitest';
@@ -31,11 +31,28 @@ describe('packed package', () => {
     const installed = entries(join(inject('installDir'), 'node_modules')).filter(
       (name) => !name.startsWith('.')
     );
-    for (const dep of Object.keys(repoPkg.dependencies)) expect(installed).toContain(dep);
+    for (const dep of Object.keys(repoPkg.dependencies)) {
+      expect(existsSync(join(inject('installDir'), 'node_modules', dep))).toBe(true);
+    }
     // Bundled libraries must not be needed at runtime.
     for (const bundled of ['@clack', 'picocolors', 'simple-git', 'xdg-basedir', 'vitest']) {
       expect(installed).not.toContain(bundled);
     }
+  });
+
+  it('loads the fullscreen renderer and its runtime dependencies from the installed package', async () => {
+    const script = [
+      "import { dirname, join } from 'node:path';",
+      "import { fileURLToPath, pathToFileURL } from 'node:url';",
+      "const root = dirname(fileURLToPath(import.meta.resolve('skills/package.json')));",
+      "const app = await import(pathToFileURL(join(root, 'dist/_chunks/app.mjs')).href);",
+      'console.log(typeof app.ManagerApp);',
+    ].join('\n');
+    const result = await exec(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: inject('installDir'),
+      env: cleanEnv(),
+    });
+    expect(result.stdout.trim()).toBe('function');
   });
 
   it('exposes the programmatic API through the exports map', async () => {

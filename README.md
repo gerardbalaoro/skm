@@ -45,17 +45,18 @@ private repositories, and all options.
 
 ## Other Commands
 
-| Command                           | Description                      |
-| --------------------------------- | -------------------------------- |
-| `npx skills find [query]`         | Search for skills                |
+| Command                           | Description                                 |
+| --------------------------------- | ------------------------------------------- |
+| `npx skills find [query]`         | Search for skills                           |
 | `npx skills install [source]`     | Restore a lockfile or install from a source |
 | `npx skills prune [skills...]`    | Remove skills deleted upstream              |
-| `npx skills list`                 | List installed skills            |
-| `npx skills use <source>@<skill>` | Use one skill without installing |
-| `npx skills check`                | Check for available updates      |
-| `npx skills update [skills...]`   | Update installed skills          |
-| `npx skills remove [skills...]`   | Remove installed skills          |
-| `npx skills init [name]`          | Create a skill template          |
+| `npx skills list -i`              | Manage skills interactively                 |
+| `npx skills list`                 | List installed skills                       |
+| `npx skills use <source>@<skill>` | Use one skill without installing            |
+| `npx skills check`                | Check for available updates                 |
+| `npx skills update [skills...]`   | Update installed skills                     |
+| `npx skills remove [skills...]`   | Remove installed skills                     |
+| `npx skills init [name]`          | Create a skill template                     |
 
 Read the [CLI reference](docs/commands.md) or run `npx skills --help` for examples and options. Experimental commands are listed [below](#experimental-features).
 
