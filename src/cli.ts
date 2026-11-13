@@ -8,6 +8,7 @@ import { runAdd, parseAddOptions, initTelemetry } from './add.ts';
 import { diagnostics, formatError, isDiagnostic } from './diagnostics.ts';
 import { runFind } from './find.ts';
 import { runInstallFromLock } from './install.ts';
+import { runGlobalRestore } from './restore-global.ts';
 import { runList } from './list.ts';
 import { removeCommand, parseRemoveOptions } from './remove.ts';
 import { runSync, parseSyncOptions } from './sync.ts';
@@ -138,6 +139,7 @@ ${BOLD}Manage Skills:${RESET}
                             https://github.com/vercel-labs/agent-skills
   use <package>@<skill>
                        Generate a prompt for using one skill without installing it
+  install [source]    Restore the lockfile, or add a source (-g for global)
   remove [skills]      Remove installed skills
   list, ls             List installed skills
   find [query]         Search for skills interactively
@@ -375,10 +377,11 @@ async function main(): Promise<void> {
     case 'a':
     case 'add': {
       const { source: addSource, options: addOpts, errors } = parseAddOptions(restArgs);
-      // `skills install` with no source restores skills-lock.json, like `npm install`
+      // Source-less installs restore the selected inventory.
       if ((command === 'i' || command === 'install') && addSource.length === 0) {
         if (!inAgent) showLogo();
-        await runInstallFromLock(restArgs);
+        if (addOpts.global) await runGlobalRestore(restArgs);
+        else await runInstallFromLock(restArgs);
         break;
       }
       // JSON mode must keep stdout parseable — no logo

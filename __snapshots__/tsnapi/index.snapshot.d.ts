@@ -167,6 +167,11 @@ export declare function resolveSource(_: string, _?: ResolveOptions): Promise<Sk
 
 // #region Variables
 export declare const diagnostics: import("nostics").Diagnostics<{
+  readonly SKILLS_MANAGEMENT_FAILED: {
+    readonly why: (p: {
+      reason: string;
+    }) => string;
+  };
   readonly SKILLS_INVALID_AGENTS: {
     readonly why: (p: {
       invalid: string[];

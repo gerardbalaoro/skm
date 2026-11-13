@@ -140,6 +140,82 @@ When installing interactively, you can choose:
 | **Symlink** (Recommended) | Creates symlinks from each agent to a canonical copy. Single source of truth, easy updates. |
 | **Copy**                  | Creates independent copies for each agent. Use when symlinks aren't supported.              |
 
+## `skills install`
+
+Restore skills from a lockfile, or install skills from a source. The alias is `i`.
+
+```bash
+# Restore missing project skills
+npx skills install
+
+# Restore missing global skills
+npx skills install -g
+
+# Preview a global restore
+npx skills install -g --dry-run
+
+# Install from a source with the same options as add
+npx skills install owner/repo --skill my-skill -g
+```
+
+Without a source, the command restores the selected lockfile. With a source, it uses
+[`skills add`](#skills-add) behavior. Project restore repairs modified skills and adds missing agent links.
+Global restore keeps existing skills unless you pass `--force`. It also keeps installed skills that do not appear in the lockfile.
+
+Restore supported sources recorded in `skills-lock.json` into `.agents/skills/` and
+link them into agent directories. Skills already in `.agents/skills/` whose files match
+the lock's content hash are left as they are and only get the agent links they are
+missing. Skills whose files differ are restored from their source. Pass `--force` to
+reinstall every skill.
+Entries from npm packages are synced from the dependencies already on disk, so
+install your npm dependencies before restoring. This command does not install
+npm packages.
+
+Restore never prompts. It links to the agents given with `--agent`; without it, to
+the agents last selected with `skills add`; otherwise to the agents detected on this
+machine. With none of these, only `.agents/skills/` is filled. Skills recorded with
+`installMode: "copy"` are copied into each agent directory instead of linked.
+
+| Option                    | Description                                                 |
+| ------------------------- | ----------------------------------------------------------- |
+| `-a, --agent <agents...>` | Link to these agents (use `'*'` for all)                    |
+| `--dry-run`               | Show what would be restored without installing anything     |
+| `--frozen-lockfile`       | Fail instead of changing `skills-lock.json` (default in CI) |
+| `--no-frozen-lockfile`    | Allow `skills-lock.json` to change in CI                    |
+| `--force`                 | Reinstall skills that are already in `.agents/skills/`      |
+
+With `--frozen-lockfile`, every restored skill must match the content hash recorded
+in `skills-lock.json`, and so must every skill that is skipped because it is already
+installed. An entry with no hash is an error. A version 1 lock produces one when the skill was
+not installed, or when its files did not match the version 1 hash. A source whose skills differ is skipped entirely, the lock is
+left untouched, and the command exits with code 1. A missing or empty lock is also
+an error. This is the default in CI; pass `--no-frozen-lockfile` to refresh the lock
+from CI instead.
+
+Global restore uses detected agents and the recorded copy preference. It keeps
+existing skills unless you pass `--force` and rejects `--frozen-lockfile`.
+
+Project restore reads version 2 `skills-lock.json` in the current directory.
+Version 1 locks migrate using installed content when it matches the old hash.
+Global restore reads version 3 `.skill-lock.json` at
+`$XDG_STATE_HOME/skills/.skill-lock.json` when `XDG_STATE_HOME` is set.
+Otherwise, it reads `~/.agents/.skill-lock.json`. These formats cannot replace each other.
+
+Git restore uses the recorded `commit` when present and keeps tracking the recorded
+ref for updates. Older entries without a commit use their recorded ref or the default
+branch. Renamed skills keep their installed name when restored.
+
+### Restore Global Skills on Another Machine
+
+1. Back up the global lockfile and any local skill edits.
+2. Copy the version 3 global lockfile to its global path on the destination machine.
+3. Configure credentials for private sources on the destination machine.
+4. Run `npx skills install -g --dry-run` to review the plan.
+5. Run `npx skills install -g` to restore missing skills.
+
+Local source paths must exist on the destination machine. Preserve edited skills
+in a source you control before you replace their installed copies.
+
 ## `skills use`
 
 Generate a prompt for one skill, or start a supported coding agent interactively:
@@ -386,41 +462,12 @@ by any dependency, or a remote `skills` entry resolves to different content. Thi
 the default when a CI environment variable such as `CI` or `GITHUB_ACTIONS` is set;
 pass `--no-frozen-lockfile` to update the lock from CI.
 
-### Restore skills from the project lock file
+### `skills experimental_install`
+
+Compatibility command for project lockfile restore:
 
 ```bash
 npx skills experimental_install
 ```
 
-`skills install` and `skills i` without a source are aliases for this command. With
-a source, they behave like `skills add`.
-
-Restore supported sources recorded in `skills-lock.json` into `.agents/skills/` and
-link them into agent directories. Skills already in `.agents/skills/` whose files match
-the lock's content hash are left as they are and only get the agent links they are
-missing. Skills whose files differ are restored from their source. Pass `--force` to
-reinstall every skill.
-Entries from npm packages are synced from the dependencies already on disk, so
-install your npm dependencies before restoring. This command does not install
-npm packages.
-
-Restore never prompts. It links to the agents given with `--agent`; without it, to
-the agents last selected with `skills add`; otherwise to the agents detected on this
-machine. With none of these, only `.agents/skills/` is filled. Skills recorded with
-`installMode: "copy"` are copied into each agent directory instead of linked.
-
-| Option                 | Description                                                 |
-| ---------------------- | ----------------------------------------------------------- |
-| `-a, --agent <agents...>` | Link to these agents (use `'*'` for all)                 |
-| `--dry-run`            | Show what would be restored without installing anything     |
-| `--frozen-lockfile`    | Fail instead of changing `skills-lock.json` (default in CI) |
-| `--no-frozen-lockfile` | Allow `skills-lock.json` to change in CI                    |
-| `--force`              | Reinstall skills that are already in `.agents/skills/`      |
-
-With `--frozen-lockfile`, every restored skill must match the content hash recorded
-in `skills-lock.json`, and so must every skill that is skipped because it is already
-installed. An entry with no hash is an error. A version 1 lock produces one when the skill was
-not installed, or when its files did not match the version 1 hash. A source whose skills differ is skipped entirely, the lock is
-left untouched, and the command exits with code 1. A missing or empty lock is also
-an error. This is the default in CI; pass `--no-frozen-lockfile` to refresh the lock
-from CI instead.
+Use [`skills install`](#skills-install) for restore options and lockfile behavior.

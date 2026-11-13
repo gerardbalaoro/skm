@@ -17,6 +17,9 @@ export const diagnostics = defineDiagnostics({
   // `why` is the full user-facing message; `fix` only carries guidance that is
   // printed as its own line.
   codes: {
+    SKILLS_MANAGEMENT_FAILED: {
+      why: (p: { reason: string }) => p.reason,
+    },
     SKILLS_INVALID_AGENTS: {
       why: (p: { invalid: string[]; valid: string[] }) => `Invalid agents: ${p.invalid.join(', ')}`,
       fix: (p: { valid: string[] }) => `Valid agents: ${p.valid.join(', ')}`,
