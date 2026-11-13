@@ -1,18 +1,22 @@
-# skills
+# skm
 
-The CLI for the open agent skills ecosystem.
+A fork of [Vercel Labs' skills CLI](https://github.com/vercel-labs/skills) with additional collection management commands.
+The repository is named `skm`; the package and CLI command remain `skills` for drop-in compatibility.
+
+The `npx skills` examples below run the upstream npm package. To run this fork locally, use `pnpm install`, then `pnpm dev`.
 
 Agent skills are reusable instructions that teach coding agents how to perform tasks,
 from reviewing code to working with a library. Discover skills at [skills.sh](https://skills.sh).
 
 <!-- agent-list:start -->
+
 Supports **OpenCode**, **Claude Code**, **Codex**, **Cursor**, and [75 more](docs/agents.md).
 <!-- agent-list:end -->
 
 <p>
   <a href="https://vercel.com/labs#labs-products"><img alt="Vercel Labs Product" src="https://img.shields.io/badge/LABS-PRODUCT-0a0a0a.svg?style=for-the-badge&amp;logo=Vercel&amp;labelColor=000000" height="28"></a>
   <a href="https://www.npmjs.com/package/skills"><img alt="npm version: skills" src="https://img.shields.io/npm/v/skills.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
-  <a href="https://github.com/vercel-labs/skills/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/vercel-labs/skills.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
+  <a href="https://github.com/gerardbalaoro/skm/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/gerardbalaoro/skm.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
   <a href="https://www.npmjs.com/package/skills"><img alt="npm downloads per month: skills" src="https://img.shields.io/npm/dm/skills.svg?style=for-the-badge&amp;labelColor=000000&amp;label=npm%20downloads" height="28"></a>
   <a href="https://skills.sh/vercel-labs/skills"><img alt="skills.sh" src="https://skills.sh/b/vercel-labs/skills?style=for-the-badge" height="28"></a>
 </p>
