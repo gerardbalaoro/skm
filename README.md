@@ -49,6 +49,7 @@ private repositories, and all options.
 | --------------------------------- | -------------------------------- |
 | `npx skills find [query]`         | Search for skills                |
 | `npx skills install [source]`     | Restore a lockfile or install from a source |
+| `npx skills prune [skills...]`    | Remove skills deleted upstream              |
 | `npx skills list`                 | List installed skills            |
 | `npx skills use <source>@<skill>` | Use one skill without installing |
 | `npx skills check`                | Check for available updates      |

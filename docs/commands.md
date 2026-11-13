@@ -279,6 +279,8 @@ update or local changes, so it can gate CI.
 
 Update project skills by default, including named skills. Use `-g` for global skills
 or `-g -p` for both scopes. Scripts that rely on scope detection must pass their scope explicitly.
+`update -y` skips deletion prompts and retains skills missing upstream. Use
+[`skills prune`](#skills-prune) to review upstream deletions.
 
 ```bash
 # Update project skills (default scope)
@@ -306,6 +308,44 @@ npx skills update -y
 | `[skills...]`   | Update specific skills by name instead of all        |
 
 A skill installed from a direct download is downloaded again and reinstalled when its content hash differs from the lock, or when its folder is missing.
+
+## `skills prune`
+
+Remove tracked skills that no longer exist in their upstream Git source.
+The default scope is project.
+
+```bash
+# Preview project removals
+npx skills prune --dry-run
+
+# Review global removals interactively
+npx skills prune -g
+
+# Remove one deleted skill when its local content is unchanged
+npx skills prune my-skill -y
+```
+
+| Option          | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `[skills...]`   | Limit checks to named skills                              |
+| `-g, --global`  | Use global skills                                         |
+| `-p, --project` | Use project skills (default)                              |
+| `--dry-run`     | Fetch sources and show candidates without changes         |
+| `-y, --yes`     | Remove candidates only when local content can be verified |
+
+Prune requires a recorded skill path and a successful GitHub, GitLab, or generic Git checkout.
+Failed source access or incomplete discovery does not establish deletion.
+Prune retains moved skills, ambiguous matches, and existing files with changed metadata.
+It also retains untracked skills, local sources, npm skills, and unsupported providers.
+
+Prune compares local content before removal, including copies in supported agent directories.
+It retains known local edits. When local content cannot be verified, `-y` retains
+the skill. This includes content tracked only by GitHub tree hashes, linked content,
+and Eve subagent placement. Interactive removal of these skills requires review and confirmation.
+
+Without `-y`, each removal requires terminal confirmation. Without a terminal,
+prune only reports candidates. Removal cleans agent links and lock entries through
+the scoped remove operation. Concurrent edits during removal are not supported.
 
 ## `skills init`
 

@@ -9,6 +9,7 @@ import { diagnostics, formatError, isDiagnostic } from './diagnostics.ts';
 import { runFind } from './find.ts';
 import { runInstallFromLock } from './install.ts';
 import { runGlobalRestore } from './restore-global.ts';
+import { runPrune } from './prune.ts';
 import { runList } from './list.ts';
 import { removeCommand, parseRemoveOptions } from './remove.ts';
 import { runSync, parseSyncOptions } from './sync.ts';
@@ -140,6 +141,7 @@ ${BOLD}Manage Skills:${RESET}
   use <package>@<skill>
                        Generate a prompt for using one skill without installing it
   install [source]    Restore the lockfile, or add a source (-g for global)
+  prune [skills]      Remove skills confirmed deleted upstream
   remove [skills]      Remove installed skills
   list, ls             List installed skills
   find [query]         Search for skills interactively
@@ -155,6 +157,11 @@ ${BOLD}Update Options:${RESET}
   -p, --project          Update project skills only
   -y, --yes              Skip confirmation prompts
   Default scope is project; -g selects global, -g -p selects both
+
+${BOLD}Prune Options:${RESET}
+  -g, --global           Prune global skills (default: project)
+  --dry-run              Preview confirmed deletions without removing
+  -y, --yes              Confirm removal (local edits are retained)
 
 ${BOLD}Project:${RESET}
   experimental_install Restore skills from skills-lock.json (alias: install, i)
@@ -423,6 +430,9 @@ async function main(): Promise<void> {
     case 'list':
     case 'ls':
       await runList(restArgs);
+      break;
+    case 'prune':
+      await runPrune(restArgs);
       break;
     case 'check':
       await runUpdate(restArgs, 'check');

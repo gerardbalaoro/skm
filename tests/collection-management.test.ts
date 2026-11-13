@@ -104,6 +104,86 @@ describe('collection management', { timeout: 30_000 }, () => {
     expect(existsSync(join(project, 'skills-lock.json'))).toBe(false);
     expect(JSON.parse(readFileSync(globalLockPath(), 'utf8')).version).toBe(3);
   });
+  it('previews deletions, then removes only the deleted tracked skill', () => {
+    expect(cli(['add', pathToFileURL(repo).href, '-a', 'universal', '-y']).exitCode).toBe(0);
+    deleteUpstream();
+    const before = readFileSync(join(project, 'skills-lock.json'), 'utf8');
+    expect(cli(['prune', '--dry-run']).stdout).toContain('Would prune alpha');
+    expect(readFileSync(join(project, 'skills-lock.json'), 'utf8')).toBe(before);
+    expect(cli(['prune', '-y']).exitCode).toBe(0);
+    expect(lock().skills.alpha).toBeUndefined();
+    expect(lock().skills.beta).toBeDefined();
+    expect(existsSync(join(project, '.agents', 'skills', 'alpha'))).toBe(false);
+  });
+  it('retains local edits, including agent-specific copies', () => {
+    expect(
+      cli(['add', pathToFileURL(repo).href, '-s', 'alpha', '-a', 'claude-code', '-y']).exitCode
+    ).toBe(0);
+    writeFileSync(
+      join(project, '.claude', 'skills', 'alpha', 'SKILL.md'),
+      skill('alpha') + 'local edits'
+    );
+    deleteUpstream();
+    expect(cli(['prune', '-y']).stderr).toContain('local edits detected');
+    expect(lock().skills.alpha).toBeDefined();
+  });
+  it('retains moved skills and malformed upstream files', () => {
+    expect(cli(['add', pathToFileURL(repo).href, '-a', 'universal', '-y']).exitCode).toBe(0);
+    git('mv', 'alpha', 'moved');
+    git('commit', '-qm', 'move');
+    expect(cli(['prune', '-y']).exitCode).toBe(0);
+    expect(lock().skills.alpha).toBeDefined();
+    writeFileSync(join(repo, 'moved', 'SKILL.md'), 'invalid frontmatter');
+    git('add', '.');
+    git('commit', '-qm', 'malformed');
+    expect(cli(['prune', '-y']).stderr).toContain('could not be discovered');
+    expect(lock().skills.alpha).toBeDefined();
+  });
+  it('retains skills when their repository is unavailable', () => {
+    expect(cli(['add', pathToFileURL(repo).href, '-a', 'universal', '-y']).exitCode).toBe(0);
+    rmSync(repo, { recursive: true });
+    expect(cli(['prune', '-y']).exitCode).toBe(1);
+    expect(lock().skills.alpha).toBeDefined();
+  });
+  it('prune leaves untracked content and skills outside the name filter intact', () => {
+    expect(cli(['add', pathToFileURL(repo).href, '-a', 'universal', '-y']).exitCode).toBe(0);
+    const personal = join(project, '.agents', 'skills', 'personal');
+    mkdirSync(personal, { recursive: true });
+    writeFileSync(join(personal, 'SKILL.md'), skill('personal'));
+    deleteUpstream();
+    expect(cli(['prune', 'beta', '-y']).exitCode).toBe(0);
+    expect(lock().skills.alpha).toBeDefined();
+    expect(cli(['prune', '-y']).exitCode).toBe(0);
+    expect(lock().skills.alpha).toBeUndefined();
+    expect(existsSync(join(personal, 'SKILL.md'))).toBe(true);
+  });
+  it('global prune retains unverified local content with -y', () => {
+    mkdirSync(join(home, '.local', 'state', 'skills'), { recursive: true });
+    const installed = join(home, '.agents', 'skills', 'alpha');
+    mkdirSync(installed, { recursive: true });
+    writeFileSync(join(installed, 'SKILL.md'), skill('alpha'));
+    writeFileSync(
+      globalLockPath(),
+      JSON.stringify({
+        version: 3,
+        skills: {
+          alpha: {
+            source: pathToFileURL(repo).href,
+            sourceType: 'git',
+            sourceUrl: pathToFileURL(repo).href,
+            skillPath: 'alpha/SKILL.md',
+            skillFolderHash: 'a'.repeat(40),
+          },
+        },
+      })
+    );
+    deleteUpstream();
+    const result = cli(['prune', '-g', '-y']);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toContain('local changes cannot be verified');
+    expect(existsSync(join(installed, 'SKILL.md'))).toBe(true);
+    expect(JSON.parse(readFileSync(globalLockPath(), 'utf8')).skills.alpha).toBeDefined();
+  });
   it('global restore leaves existing agent copies and their local edits intact', () => {
     expect(
       cli([
@@ -184,6 +264,40 @@ describe('collection management', { timeout: 30_000 }, () => {
     const after = JSON.parse(readFileSync(globalLockPath(), 'utf8')).skills.review;
     expect(after).toMatchObject({ commit: pinned, skillName: 'alpha', ref });
     expect(JSON.parse(readFileSync(globalLockPath(), 'utf8')).skills.alpha).toBeUndefined();
+  });
+  it('prune retains a renamed skill that moved upstream', () => {
+    expect(
+      cli([
+        'add',
+        pathToFileURL(repo).href,
+        '-s',
+        'alpha',
+        '--rename',
+        'review',
+        '-a',
+        'universal',
+        '-y',
+      ]).exitCode
+    ).toBe(0);
+    git('mv', 'alpha', 'moved');
+    git('commit', '-qm', 'move alpha');
+    const result = cli(['prune', '-y']);
+    expect(result.exitCode, result.stderr).toBe(0);
+    expect(lock().skills.review).toBeDefined();
+    expect(existsSync(join(project, '.agents', 'skills', 'review', 'SKILL.md'))).toBe(true);
+  });
+  it('prune retains linked content that is not covered by the content hash', () => {
+    expect(
+      cli(['add', pathToFileURL(repo).href, '-s', 'alpha', '-a', 'universal', '-y']).exitCode
+    ).toBe(0);
+    writeFileSync(join(root, 'personal.txt'), 'user content');
+    symlinkSync(
+      join(root, 'personal.txt'),
+      join(project, '.agents', 'skills', 'alpha', 'personal.txt')
+    );
+    deleteUpstream();
+    expect(cli(['prune', '-y']).stderr).toContain('local changes cannot be verified');
+    expect(lock().skills.alpha).toBeDefined();
   });
   it('named update stays in project scope unless -g is passed', () => {
     mkdirSync(join(home, '.local', 'state', 'skills'), { recursive: true });
