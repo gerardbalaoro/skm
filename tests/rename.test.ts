@@ -110,7 +110,7 @@ describe('add --rename', () => {
     const check = cli(['check']);
     expect(check.stdout).not.toContain('differ from skills-lock.json');
     expect(check.exitCode).toBe(0);
-    const restore = cli(['experimental_install', '--frozen-lockfile']);
+    const restore = cli(['install', '--frozen-lockfile']);
     expect(restore.exitCode).toBe(0);
     expect(restore.stdout + restore.stderr).toContain('1 skill already installed');
   });
@@ -165,7 +165,7 @@ describe('add --rename', () => {
     const lockBefore = readLock();
     rmSync(join(project, '.claude', 'skills'), { recursive: true });
 
-    const result = cli(['experimental_install', '--agent', 'claude-code']);
+    const result = cli(['install', '--agent', 'claude-code']);
 
     expect(result.exitCode).toBe(0);
     expect(readText(claudeSkill('beta'))).toContain('name: beta\n');
@@ -177,7 +177,7 @@ describe('add --rename', () => {
     expect(addLocalRenamed().exitCode).toBe(0);
     rmSync(join(project, '.claude', 'skills'), { recursive: true });
 
-    const result = cli(['experimental_install', '--agent', 'claude-code', '--frozen-lockfile']);
+    const result = cli(['install', '--agent', 'claude-code', '--frozen-lockfile']);
 
     expect(result.exitCode).toBe(0);
     expect(readText(claudeSkill('beta'))).toContain('name: beta\n');
@@ -188,7 +188,7 @@ describe('add --rename', () => {
     expect(cli(['add', repo, '--skill', 'alpha', '-a', 'claude-code', '-y']).exitCode).toBe(0);
     rmSync(join(project, '.claude', 'skills'), { recursive: true });
 
-    const result = cli(['experimental_install', '--agent', 'claude-code']);
+    const result = cli(['install', '--agent', 'claude-code']);
 
     expect(result.exitCode).toBe(0);
     expect(readText(claudeSkill('beta'))).toContain('name: beta\n');

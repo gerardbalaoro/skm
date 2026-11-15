@@ -656,8 +656,8 @@ description: Test
     }
   });
 
-  it('should restore from lock file with experimental_install', () => {
-    const result = runCli(['experimental_install'], testDir);
+  it('should restore from lock file with install', () => {
+    const result = runCli(['install'], testDir);
     expect(result.stdout).toContain('No project skills found in skills-lock.json');
   });
 

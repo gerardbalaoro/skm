@@ -72,6 +72,29 @@ describe('collection management', { timeout: 30_000 }, () => {
     expect(cli([command, '--frozen-lockfile']).exitCode).toBe(0);
     expect(existsSync(join(project, '.agents', 'skills', 'alpha', 'SKILL.md'))).toBe(true);
   });
+  it('rejects experimental_install without restoring or changing the project lock', async () => {
+    const lockPath = join(project, 'skills-lock.json');
+    writeFileSync(
+      lockPath,
+      JSON.stringify({
+        version: 2,
+        skills: {
+          alpha: {
+            source: join(repo, 'alpha'),
+            sourceType: 'local',
+            computedHash: await computeSkillFolderHash(join(repo, 'alpha')),
+          },
+        },
+      })
+    );
+    const before = readFileSync(lockPath, 'utf8');
+    const result = cli(['experimental_install']);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain('Unknown command');
+    expect(readFileSync(lockPath, 'utf8')).toBe(before);
+    expect(existsSync(join(project, '.agents', 'skills', 'alpha'))).toBe(false);
+    expect(cli(['--help']).stdout).not.toContain('experimental_install');
+  });
   it('install with source retains add behavior', () => {
     expect(
       cli(['install', pathToFileURL(repo).href, '-s', 'alpha', '-a', 'universal', '-y']).exitCode

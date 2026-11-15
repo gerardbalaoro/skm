@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { basename, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { stringify as stringifyYaml } from 'yaml';
-import { runAdd, parseAddOptions, initTelemetry } from './add.ts';
+import { runAdd, parseAddOptions, ADD_OPTIONS, initTelemetry } from './add.ts';
 import { diagnostics, formatError, isDiagnostic } from './diagnostics.ts';
 import { runFind } from './find.ts';
 import { runInstallFromLock } from './install.ts';
@@ -12,7 +12,8 @@ import { runGlobalRestore } from './restore-global.ts';
 import { runPrune } from './prune.ts';
 import { runList } from './list.ts';
 import { removeCommand, parseRemoveOptions } from './remove.ts';
-import { runSync, parseSyncOptions } from './sync.ts';
+import { runSync, parseSyncOptions, SYNC_OPTIONS } from './sync.ts';
+import { parseCliArgs, throwFirstError } from './cli-args.ts';
 import { flushTelemetry } from './telemetry.ts';
 import { isRunningInAgent } from './detect-agent.ts';
 import { runUpdate } from './update.ts';
@@ -76,13 +77,13 @@ function showBanner(): void {
   );
   console.log();
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}npx skills experimental_install${RESET} ${DIM}Restore from skills-lock.json${RESET}`
+    `  ${DIM}$${RESET} ${TEXT}npx skills install${RESET} ${DIM}Restore from skills-lock.json${RESET}`
   );
   console.log(
     `  ${DIM}$${RESET} ${TEXT}npx skills init ${DIM}[name]${RESET}          ${DIM}Create a new skill${RESET}`
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}npx skills experimental_sync${RESET}    ${DIM}Sync skills from node_modules${RESET}`
+    `  ${DIM}$${RESET} ${TEXT}npx skills sync${RESET}    ${DIM}Sync skills from node_modules${RESET}`
   );
   console.log();
   console.log(`${DIM}try:${RESET} npx skills add vercel-labs/agent-skills`);
@@ -113,10 +114,10 @@ function showHelp(): void {
     ['skills update'],
     ['skills update my-skill', 'update a single skill'],
     ['skills update -g', 'update global skills only'],
-    ['skills experimental_install', 'restore from skills-lock.json'],
+    ['skills install', 'restore from skills-lock.json'],
     ['skills init my-skill'],
-    ['skills experimental_sync', 'sync from node_modules (experimental)'],
-    ['skills experimental_sync -y', 'sync without prompts'],
+    ['skills sync', 'sync from node_modules'],
+    ['skills sync -y', 'sync without prompts'],
   ];
   const exampleWidth = Math.max(
     ...examples.filter(([, description]) => description).map(([command]) => command.length)
@@ -167,11 +168,10 @@ ${BOLD}List Options:${RESET}
   -i, --interactive      Search, inspect, check, update and remove skills
 
 ${BOLD}Project:${RESET}
-  experimental_install Restore skills from skills-lock.json (alias: install, i)
   init [name]          Initialize a skill (creates <name>/SKILL.md or ./SKILL.md)
-  experimental_sync    Sync skills from node_modules into agent directories (alias: sync)
+  sync                 Sync skills from node_modules into agent directories
 
-${BOLD}Experimental Install Options:${RESET}
+${BOLD}Install Options:${RESET}
   -a, --agent <agents>   Link to these agents (default: last selected, else detected)
   --dry-run              Show what would be restored without installing anything
   --frozen-lockfile      Fail instead of changing skills-lock.json (default in CI)
@@ -204,7 +204,7 @@ ${BOLD}Remove Options:${RESET}
   -y, --yes              Skip confirmation prompts
   --all                  Remove every installed skill (-y implied). Do not combine with named skills.
   
-${BOLD}Experimental Sync Options:${RESET}
+${BOLD}Sync Options:${RESET}
   -a, --agent <agents>   Specify agents to install to (use '*' for all agents)
   -y, --yes              Skip confirmation prompts
   --copy                 Copy skills instead of linking them to node_modules
@@ -378,23 +378,26 @@ async function main(): Promise<void> {
       console.log();
       runInit(restArgs);
       break;
-    case 'experimental_install': {
-      if (!inAgent) showLogo();
-      await runInstallFromLock(restArgs);
-      break;
-    }
     case 'i':
     case 'install':
     case 'a':
     case 'add': {
-      const { source: addSource, options: addOpts, errors } = parseAddOptions(restArgs);
-      // Source-less installs restore the selected inventory.
-      if ((command === 'i' || command === 'install') && addSource.length === 0) {
-        if (!inAgent) showLogo();
-        if (addOpts.global) await runGlobalRestore(restArgs);
-        else await runInstallFromLock(restArgs);
-        break;
+      if (command === 'i' || command === 'install') {
+        // Recognize restore option values before deciding whether a source was given.
+        const { values, positionals, errors } = parseCliArgs(restArgs, {
+          ...ADD_OPTIONS,
+          ...SYNC_OPTIONS,
+          force: { type: 'boolean' },
+        });
+        if (positionals.length === 0) {
+          throwFirstError(errors);
+          if (!inAgent) showLogo();
+          if (values.global) await runGlobalRestore(restArgs);
+          else await runInstallFromLock(restArgs);
+          break;
+        }
       }
+      const { source: addSource, options: addOpts, errors } = parseAddOptions(restArgs);
       // JSON mode must keep stdout parseable — no logo
       if (!inAgent && !addOpts.json) showLogo();
       if (errors.length > 0) {

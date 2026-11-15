@@ -651,7 +651,7 @@ export async function runSync(args: string[], options: SyncOptions = {}): Promis
 
   console.log();
   if (!agentResult.isAgent) {
-    p.intro(pc.bgCyan(pc.black(' skills experimental_sync ')));
+    p.intro(pc.bgCyan(pc.black(' skills sync ')));
   }
 
   if (agentResult.isAgent) {
@@ -1057,7 +1057,7 @@ export async function runSync(args: string[], options: SyncOptions = {}): Promis
     }
   }
 
-  // Track telemetry
+  // Keep the existing event name for analytics continuity.
   track({
     event: 'experimental_sync',
     skillCount: String(toInstall.length + cachedToInstall.length),
@@ -1071,20 +1071,22 @@ export async function runSync(args: string[], options: SyncOptions = {}): Promis
   );
 }
 
+export const SYNC_OPTIONS = {
+  yes: { type: 'boolean', short: 'y' },
+  copy: { type: 'boolean' },
+  'dry-run': { type: 'boolean' },
+  'no-cleanup': { type: 'boolean' },
+  'no-remote': { type: 'boolean' },
+  'frozen-lockfile': { type: 'boolean' },
+  'no-frozen-lockfile': { type: 'boolean' },
+  recursive: { type: 'boolean', short: 'r' },
+  agent: { type: 'list', short: 'a', value: 'an agent name' },
+  include: { type: 'list', value: 'a pattern' },
+  exclude: { type: 'list', value: 'a pattern' },
+} as const;
+
 export function parseSyncOptions(args: string[]): { options: SyncOptions } {
-  const { values, errors } = parseCliArgs(args, {
-    yes: { type: 'boolean', short: 'y' },
-    copy: { type: 'boolean' },
-    'dry-run': { type: 'boolean' },
-    'no-cleanup': { type: 'boolean' },
-    'no-remote': { type: 'boolean' },
-    'frozen-lockfile': { type: 'boolean' },
-    'no-frozen-lockfile': { type: 'boolean' },
-    recursive: { type: 'boolean', short: 'r' },
-    agent: { type: 'list', short: 'a', value: 'an agent name' },
-    include: { type: 'list', value: 'a pattern' },
-    exclude: { type: 'list', value: 'a pattern' },
-  });
+  const { values, errors } = parseCliArgs(args, SYNC_OPTIONS);
   throwFirstError(errors);
 
   const options: SyncOptions = {};

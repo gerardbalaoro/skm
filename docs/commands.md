@@ -122,7 +122,7 @@ npx skills add vercel-labs/json-render --skill shadcn --rename json-render-shadc
 
 The new name is used for the skill folder, the lock file key, and the `name` field in the installed `SKILL.md`, so agents invoke the skill by the new name. The name must contain only lowercase letters, digits, `.`, `_`, and `-`. `--rename` works with one skill only: select it with `--skill` or `<source>@<skill>`.
 
-The lock entry records the original name in `skillName`. `skills update`, `skills check`, `skills experimental_install`, and `skills experimental_sync` use it to find the skill in its source, and keep the new name. `skills list` shows the original name next to the source. To go back to the original name, remove the renamed skill and add it again without `--rename`.
+The lock entry records the original name in `skillName`. `skills update`, `skills check`, `skills install`, and `skills sync` use it to find the skill in its source, and keep the new name. `skills list` shows the original name next to the source. To go back to the original name, remove the renamed skill and add it again without `--rename`.
 
 ### Installation Scope
 
@@ -458,22 +458,16 @@ the lock does not track, such as skills you wrote by hand, are listed as
 skipped and never deleted. To remove one of them, name it:
 `npx skills remove my-skill`.
 
-## Experimental commands
+## `skills sync`
 
-These commands are still experimental. Their names, options, and behavior may change.
-
-<a id="skills-sync"></a>
-
-### `skills experimental_sync`
-
-Sync skills from npm packages and `package.json` declarations. `sync` remains
-supported as a compatibility alias for users of skills@1.7.3.
+Sync skills from npm packages and `package.json` declarations.
+The legacy `experimental_sync` command remains a compatibility alias.
 
 Install a package that ships skills, then sync them into your project:
 
 ```bash
 npm install -D skills agent-browser
-npx skills experimental_sync -y
+npx skills sync -y
 ```
 
 Sync reads installed dependencies declared in your project's `package.json`, including
@@ -487,7 +481,7 @@ The `.agents/skills/` directory is the shared location. Selecting Claude Code al
 creates links under `.claude/skills/` pointing to the shared skills:
 
 ```bash
-npx skills experimental_sync -a claude-code -y
+npx skills sync -a claude-code -y
 ```
 
 Outside an agent, sync detects installed agents. When run inside a coding agent,
@@ -501,7 +495,7 @@ To run sync after dependency installation, add a `prepare` script:
 ```json
 {
   "scripts": {
-    "prepare": "skills experimental_sync -y"
+    "prepare": "skills sync -y"
   }
 }
 ```
@@ -556,13 +550,3 @@ lock, its content or package version differs, a locked skill is no longer provid
 by any dependency, or a remote `skills` entry resolves to different content. This is
 the default when a CI environment variable such as `CI` or `GITHUB_ACTIONS` is set;
 pass `--no-frozen-lockfile` to update the lock from CI.
-
-### `skills experimental_install`
-
-Compatibility command for project lockfile restore:
-
-```bash
-npx skills experimental_install
-```
-
-Use [`skills install`](#skills-install) for restore options and lockfile behavior.

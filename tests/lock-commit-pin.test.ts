@@ -66,14 +66,14 @@ describe('lock commit pin', () => {
     publish('v2');
     clearInstall();
 
-    const frozen = cli('experimental_install', '--frozen-lockfile');
+    const frozen = cli('install', '--frozen-lockfile');
     expect(frozen.exitCode).toBe(0);
     expect(installedBody()).toContain('v1');
     expect(readFileSync(lockPath(), 'utf-8')).toBe(before);
 
     // A non-frozen restore also keeps the locked commit, and the lock keeps no SHA as its ref
     clearInstall();
-    expect(cli('experimental_install').exitCode).toBe(0);
+    expect(cli('install').exitCode).toBe(0);
     expect(installedBody()).toContain('v1');
     expect(readFileSync(lockPath(), 'utf-8')).toBe(before);
   });

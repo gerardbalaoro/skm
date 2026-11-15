@@ -3632,7 +3632,7 @@ async function promptForFindSkills(
   }
 }
 
-const ADD_OPTIONS = {
+export const ADD_OPTIONS = {
   global: { type: 'boolean', short: 'g' },
   yes: { type: 'boolean', short: 'y' },
   list: { type: 'boolean', short: 'l' },
@@ -3647,8 +3647,7 @@ const ADD_OPTIONS = {
   rename: { type: 'string', value: 'a skill name' },
 } as const;
 
-// Parse command line options from args array. Unknown options are ignored:
-// `skills install` passes restore flags (`--force`, `--frozen-lockfile`) through here.
+// Parse add options; unknown options are ignored.
 export function parseAddOptions(args: string[]): {
   source: string[];
   options: AddOptions;
