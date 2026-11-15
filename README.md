@@ -14,11 +14,9 @@ Supports **OpenCode**, **Claude Code**, **Codex**, **Cursor**, and [75 more](doc
 <!-- agent-list:end -->
 
 <p>
-  <a href="https://vercel.com/labs#labs-products"><img alt="Vercel Labs Product" src="https://img.shields.io/badge/LABS-PRODUCT-0a0a0a.svg?style=for-the-badge&amp;logo=Vercel&amp;labelColor=000000" height="28"></a>
-  <a href="https://www.npmjs.com/package/skills"><img alt="npm version: skills" src="https://img.shields.io/npm/v/skills.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
-  <a href="https://github.com/gerardbalaoro/skm/blob/main/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/gerardbalaoro/skm.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
-  <a href="https://www.npmjs.com/package/skills"><img alt="npm downloads per month: skills" src="https://img.shields.io/npm/dm/skills.svg?style=for-the-badge&amp;labelColor=000000&amp;label=npm%20downloads" height="28"></a>
-  <a href="https://skills.sh/vercel-labs/skills"><img alt="skills.sh" src="https://skills.sh/b/vercel-labs/skills?style=for-the-badge" height="28"></a>
+  <a href="https://github.com/gerardbalaoro/skm/stargazers"><img alt="GitHub stars: skm" src="https://img.shields.io/github/stars/gerardbalaoro/skm?style=for-the-badge&amp;logo=github&amp;labelColor=000000" height="28"></a>
+  <a href="https://github.com/gerardbalaoro/skm/forks"><img alt="GitHub forks: skm" src="https://img.shields.io/github/forks/gerardbalaoro/skm?style=for-the-badge&amp;labelColor=000000" height="28"></a>
+  <a href="https://github.com/gerardbalaoro/skm/blob/dev/LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/gerardbalaoro/skm.svg?style=for-the-badge&amp;labelColor=000000" height="28"></a>
 </p>
 
 ## Install a Skill
