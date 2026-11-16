@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, mkdir, writeFile, rm, symlink, readFile } from 'fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, symlink, readFile, realpath } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { readSkillProvenance, describeSkillProvenance } from '../src/skill-provenance.ts';
@@ -39,7 +39,7 @@ describe('installed skill provenance', () => {
     expect(result).toEqual({
       source: 'Unknown (no source recorded)',
       recordedBy: 'No source record',
-      location: skill,
+      location: await realpath(skill),
     });
     expect(await readFile(path, 'utf8')).toBe(before);
   });

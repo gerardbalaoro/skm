@@ -1,4 +1,4 @@
-import { createElement } from 'react';
+import { act, createElement } from 'react';
 import { render, cleanup } from 'ink-testing-library';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ManagerApp } from '../src/tui/app.ts';
@@ -33,18 +33,24 @@ const source: ManagerItem = {
 };
 let services: ManagerServices;
 const start = async (global = false) => {
-  const app = render(createElement(ManagerApp, { services, global }));
+  let app!: ReturnType<typeof render>;
+  await act(async () => {
+    app = render(createElement(ManagerApp, { services, global }));
+  });
   await vi.waitFor(() => expect(app.lastFrame()).toContain('Installed · 2'));
-  // The first data frame precedes the select widget’s input-effect subscription.
-  await new Promise((resolve) => setTimeout(resolve, 50));
   return app;
 };
 const press = async (app: ReturnType<typeof render>, key: string) => {
-  app.stdin.write(key);
-  // Ink batches keyboard events; let React commit before sending the next key.
-  await new Promise((resolve) => setTimeout(resolve, 40));
+  // Flush pending effects before dispatch, then commit all updates from this key.
+  await act(async () => {});
+  await act(async () => {
+    app.stdin.write(key);
+    // Ink buffers a bare Escape to distinguish it from a longer escape sequence.
+    if (key === '\u001b') await new Promise((resolve) => setTimeout(resolve, 40));
+  });
 };
 beforeEach(() => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   services = {
     load: vi.fn().mockResolvedValue({ skills: [alpha, beta], sources: [source] }),
     discover: vi.fn().mockResolvedValue([
@@ -65,8 +71,9 @@ beforeEach(() => {
     }),
   };
 });
-afterEach(() => {
-  cleanup();
+afterEach(async () => {
+  await act(async () => cleanup());
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -108,7 +115,10 @@ describe('fullscreen manager navigation and operations', () => {
       name: `skill-${String(n).padStart(2, '0')}`,
     }));
     services.load = vi.fn().mockResolvedValue({ skills: many, sources: [source] });
-    const app = render(createElement(ManagerApp, { services, global: false }));
+    let app!: ReturnType<typeof render>;
+    await act(async () => {
+      app = render(createElement(ManagerApp, { services, global: false }));
+    });
     await vi.waitFor(() => expect(app.lastFrame()).toContain('Installed · 30'));
     for (let n = 0; n < 20; n++) await press(app, '\u001b[B');
     await press(app, ' ');
@@ -135,10 +145,14 @@ describe('fullscreen manager navigation and operations', () => {
     await press(app, '\u001b[B');
     Object.defineProperty(app.stdout, 'columns', { value: 70, configurable: true });
     Object.defineProperty(app.stdout, 'rows', { value: 20, configurable: true });
-    app.stdout.emit('resize');
+    await act(async () => {
+      app.stdout.emit('resize');
+    });
     await vi.waitFor(() => expect(app.lastFrame()).toContain('Version: 3.0'));
     Object.defineProperty(app.stdout, 'columns', { value: 40, configurable: true });
-    app.stdout.emit('resize');
+    await act(async () => {
+      app.stdout.emit('resize');
+    });
     await vi.waitFor(() => expect(app.lastFrame()).toContain('Enlarge terminal'));
   });
   it('filters locally without running network operations', async () => {
@@ -372,9 +386,11 @@ describe('fullscreen manager navigation and operations', () => {
     await press(app, '\u001b[D');
     expect(app.lastFrame()).toContain('Installed · 2');
     expect(app.lastFrame()).not.toContain('Searching');
-    finish(
-      Array.from({ length: 50 }, (_, n) => ({ ...alpha, id: `found-${n}`, name: `Found ${n}` }))
-    );
+    await act(async () => {
+      finish(
+        Array.from({ length: 50 }, (_, n) => ({ ...alpha, id: `found-${n}`, name: `Found ${n}` }))
+      );
+    });
     await press(app, '\u001b[B');
     expect(app.lastFrame()).not.toContain('50');
     await press(app, '\t');
