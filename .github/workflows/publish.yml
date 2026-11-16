@@ -1,30 +1,31 @@
-name: Publish
+name: Release
 
 on:
+  push:
+    branches: [dev]
   workflow_dispatch:
-    inputs:
-      bump:
-        description: 'Version bump type'
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
+    if: github.repository == 'gerardbalaoro/skm' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
       contents: write
+      pull-requests: write
       id-token: write
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
@@ -32,73 +33,25 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          cache: pnpm
-          registry-url: 'https://registry.npmjs.org'
+          node-version: '24'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Validate release
+        run: pnpm release:check
 
-      - name: Import GPG signing key
-        # Pinned to a maintainer-owned fork of crazy-max/ghaction-import-gpg
-        # so a compromise of the upstream namespace can't push malicious code
-        # into our release pipeline. Update the SHA deliberately when pulling
-        # upstream changes.
-        uses: quuu/ghaction-import-gpg@72c784c2e295f26ec09b0c20761c93711beaa338
+      - name: Version or publish
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
-          gpg_private_key: ${{ secrets.PUBLISH_BOT_GPG_PRIVATE_KEY }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_tag_gpgsign: true
-          git_config_global: true
-
-      - name: Reset generated files
-        run: |
-          git checkout -- ThirdPartyNoticeText.txt || true
-
-      - name: Bump version
-        run: |
-          npm version ${{ inputs.bump }} -m "v%s"
-
-      - name: Push changes
-        run: |
-          git push
-          git push --tags
-
-      - name: Publish to npm
-        id: publish
-        run: npm publish --provenance --access public
-
-      - name: Create GitHub Release
-        if: steps.publish.outcome == 'success'
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-
-          # Get changelog from merged PRs since last tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -z "$LATEST_TAG" ]; then
-            SINCE=""
-          else
-            SINCE=$(git log -1 --format=%cI ${LATEST_TAG})
-          fi
-
-          # Fetch merged PRs and format as changelog
-          if [ -z "$SINCE" ]; then
-            PRS=$(gh pr list --state merged --json number,title,author --limit 100)
-          else
-            PRS=$(gh pr list --state merged --search "merged:>=${SINCE}" --json number,title,author --limit 100)
-          fi
-
-          CHANGELOG=$(echo "$PRS" | jq -r '.[] | "- \(.title) (#\(.number))"')
-          CONTRIBUTORS=$(echo "$PRS" | jq -r '.[].author.login' | sort -u | sed 's/^/@/' | paste -sd ', ' -)
-
-          # Generate release notes from template
-          export VERSION CHANGELOG CONTRIBUTORS
-          envsubst < .github/RELEASE_TEMPLATE.md > release-notes.md
-
-          gh release create "v${VERSION}" --notes-file release-notes.md
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-base-branch: dev
+          pr-title: 'chore(release): version @gblab/skm'
+          commit-message: 'chore(release): version packages'
+          version-script: pnpm release:version
+          publish-script: pnpm release
+          create-github-releases: true
+          push-git-tags: true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

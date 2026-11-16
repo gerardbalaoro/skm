@@ -1313,7 +1313,7 @@ describe('sync command', () => {
 
     it('advertises sync in the banner', () => {
       const result = runCli([]);
-      expect(result.stdout).toContain('npx skills sync');
+      expect(result.stdout).toContain('npx @gblab/skm sync');
       expect(result.stdout).not.toContain('experimental_sync');
     });
   });

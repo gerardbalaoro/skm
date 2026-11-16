@@ -44,7 +44,7 @@ describe('packed package', () => {
     const script = [
       "import { dirname, join } from 'node:path';",
       "import { fileURLToPath, pathToFileURL } from 'node:url';",
-      "const root = dirname(fileURLToPath(import.meta.resolve('skills/package.json')));",
+      `const root = dirname(fileURLToPath(import.meta.resolve(${JSON.stringify(`${inject('packageName')}/package.json`)})));`,
       "const app = await import(pathToFileURL(join(root, 'dist/_chunks/app.mjs')).href);",
       'console.log(typeof app.ManagerApp);',
     ].join('\n');
@@ -56,9 +56,9 @@ describe('packed package', () => {
   });
 
   it('exposes the programmatic API through the exports map', async () => {
-    // Resolve `skills` the way a consumer would: a script in the install prefix.
+    // Resolve the installed package the way a consumer would: a script in the install prefix.
     const script = [
-      "const api = await import('skills');",
+      `const api = await import(${JSON.stringify(inject('packageName'))});`,
       'console.log(JSON.stringify({',
       '  exports: Object.keys(api).sort(),',
       "  agent: api.getSupportedAgents().some((a) => a.id === 'claude-code'),",
@@ -74,17 +74,22 @@ describe('packed package', () => {
     expect(agent).toBe(true);
   });
 
-  it('runs through the npm bin shim', async () => {
-    const shim = join(
-      inject('installDir'),
-      'node_modules',
-      '.bin',
-      process.platform === 'win32' ? 'skills.cmd' : 'skills'
+  for (const bin of ['skm', 'skills']) {
+    it.skipIf(bin === 'skm' && inject('packageName') !== '@gblab/skm')(
+      `runs through the ${bin} npm bin shim`,
+      async () => {
+        const shim = join(
+          inject('installDir'),
+          'node_modules',
+          '.bin',
+          process.platform === 'win32' ? `${bin}.cmd` : bin
+        );
+        const result = await exec(shim, ['--version'], { env: cleanEnv() });
+        if (!process.env.SKILLS_E2E_PACKAGE) expect(result.stdout.trim()).toBe(repoPkg.version);
+        else expect(result.stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
+      }
     );
-    const result = await exec(shim, ['--version'], { env: cleanEnv() });
-    if (!process.env.SKILLS_E2E_PACKAGE) expect(result.stdout.trim()).toBe(repoPkg.version);
-    else expect(result.stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
-  });
+  }
 
   it('resolves and runs the CLI through its legacy package subpath', async () => {
     const resolved = await exec(
@@ -92,7 +97,7 @@ describe('packed package', () => {
       [
         '--input-type=module',
         '-e',
-        "import { fileURLToPath } from 'node:url'; console.log(fileURLToPath(import.meta.resolve('skills/bin/cli.mjs', import.meta.url)));",
+        `import { fileURLToPath } from 'node:url'; console.log(fileURLToPath(import.meta.resolve(${JSON.stringify(`${inject('packageName')}/bin/cli.mjs`)}, import.meta.url)));`,
       ],
       { cwd: inject('installDir'), env: cleanEnv() }
     );
@@ -109,7 +114,7 @@ describe('packed package', () => {
     expect(help.output).toContain('add <package>');
 
     const banner = await sandbox.skills([]);
-    expect(banner.output).toContain('skills add');
+    expect(banner.output).toContain(`${inject('packageName')} add`);
   });
 
   it('lists nothing in a fresh project and home', async () => {

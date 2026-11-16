@@ -132,7 +132,7 @@ If reading an older lock file version, it's wiped. Users must reinstall skills t
 
 ## Public API
 
-`src/index.ts` is the package's library entry (`import { installSkills } from 'skills'`).
+`src/index.ts` is the package's library entry (`import { installSkills } from '@gblab/skm'`).
 Its surface is snapshotted by [tsnapi](https://github.com/antfu/tsnapi) into
 `__snapshots__/tsnapi/`, and `pnpm build` fails when it changes. After an intended change run
 `pnpm api:update` (additive) or `pnpm api:update:breaking`, and commit the snapshot.
@@ -187,7 +187,7 @@ pnpm test
 
 # Production e2e (packs, installs the tarball in a clean prefix, hits live sources)
 pnpm test:e2e
-SKILLS_E2E_PACKAGE=skills@latest pnpm test:e2e  # test a published version instead
+SKILLS_E2E_PACKAGE=@gblab/skm@latest pnpm test:e2e  # test a published version instead
 SKILLS_E2E_KEEP=1 pnpm test:e2e                 # keep the scratch dir for debugging
 
 # Run specific test file(s)
@@ -224,13 +224,22 @@ CI will fail if code is not properly formatted.
 
 ## Publishing
 
+Releases come from `dev`. Keep `main` identical to upstream.
+
 ```bash
-# 1. Bump version in package.json
-# 2. Build
-pnpm build
-# 3. Publish
-npm publish
+# Describe a change to the published package
+pnpm changeset
+
+# Preview pending version changes
+pnpm changeset status
+
+# Validate the package before releasing
+pnpm release:check
 ```
+
+GitHub Actions creates a version PR from pending changesets. Merging that PR
+publishes `@gblab/skm` through npm trusted publishing and creates a GitHub release.
+See [docs/releasing.md](docs/releasing.md) for initial setup and local release steps.
 
 ## Adding a New Agent
 

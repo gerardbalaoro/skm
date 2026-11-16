@@ -2,7 +2,7 @@
 
 [Back to the README](../README.md)
 
-Create a template with `npx skills init my-skill`, then edit its `SKILL.md`.
+Create a template with `npx @gblab/skm init my-skill`, then edit its `SKILL.md`.
 
 Skills are directories containing a `SKILL.md` file with YAML frontmatter:
 

@@ -51,10 +51,10 @@ describe('skills CLI', () => {
       const result = runCli([]);
       const output = stripLogo(result.stdout);
       expect(output).toContain('The open agent skills ecosystem');
-      expect(output).toContain('npx skills add');
-      expect(output).toContain('npx skills use');
-      expect(output).toContain('npx skills update');
-      expect(output).toContain('npx skills init');
+      expect(output).toContain('npx @gblab/skm add');
+      expect(output).toContain('npx @gblab/skm use');
+      expect(output).toContain('npx @gblab/skm update');
+      expect(output).toContain('npx @gblab/skm init');
       expect(output).toContain('skills.sh');
     });
   });

@@ -161,7 +161,7 @@ export const diagnostics = defineDiagnostics({
         p.sshUrl
           ? `Authentication failed for ${p.url}.\n` +
             `  - For private repos, ensure you have access\n` +
-            `  - Retry with SSH: npx skills add ${p.sshUrl}\n` +
+            `  - Retry with SSH: npx @gblab/skm add ${p.sshUrl}\n` +
             `  - Check access with: gh auth status -h ${p.host} or ssh -T git@${p.host}`
           : `Authentication failed for ${p.url}.\n` +
             `  - For private repos, ensure you have access\n` +
@@ -173,7 +173,7 @@ export const diagnostics = defineDiagnostics({
         `GitHub blocked HTTPS access to ${p.url} because the organization enforces SAML SSO.\n` +
         `  skills tried your existing git credentials and available fallbacks, but none succeeded.\n` +
         `  - Re-authorize your GitHub credentials/app for that org's SSO policy\n` +
-        `  - Or rerun with SSH: npx skills add ${p.sshUrl}\n` +
+        `  - Or rerun with SSH: npx @gblab/skm add ${p.sshUrl}\n` +
         `  - Verify access with: gh auth status -h ${p.host} or ssh -T git@${p.host}`,
     },
     SKILLS_GIT_CLONE_FAILED: {

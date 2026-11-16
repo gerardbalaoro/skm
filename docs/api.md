@@ -5,11 +5,11 @@ scaffolders) can install and manage skills without spawning the CLI or
 sharing the terminal with it.
 
 ```bash
-npm install skills
+npm install @gblab/skm
 ```
 
 ```ts
-import { detectAgents, installSkills, resolveSource } from 'skills';
+import { detectAgents, installSkills, resolveSource } from '@gblab/skm';
 
 const { agents } = await detectAgents({ cwd });
 
@@ -137,7 +137,7 @@ Options passed to a call take precedence over `config`, which takes
 precedence over the defaults.
 
 ```ts
-import type { SkillsConfig } from 'skills';
+import type { SkillsConfig } from '@gblab/skm';
 
 const config: SkillsConfig = {
   scope: 'project', // 'project' | 'global'
@@ -185,7 +185,7 @@ Each has a permanent `code` (`SKILLS_*`), a `message`, and often a `fix`.
 Check them with `isDiagnostic`:
 
 ```ts
-import { installSkills, isDiagnostic } from 'skills';
+import { installSkills, isDiagnostic } from '@gblab/skm';
 
 try {
   await installSkills(source, options);

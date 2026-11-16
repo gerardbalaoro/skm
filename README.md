@@ -1,9 +1,21 @@
 # skm
 
 A fork of [Vercel Labs' skills CLI](https://github.com/vercel-labs/skills) with additional collection management commands.
-The repository is named `skm`; the package and CLI command remain `skills` for drop-in compatibility.
+Install from npm (Node.js 22.20 or later). If upstream `skills` is installed globally, remove it first with `npm uninstall -g skills`:
 
-The `npx skills` examples below run the upstream npm package. To run this fork locally, use `pnpm install`, then `pnpm dev`.
+```bash
+npm install -g @gblab/skm
+skm list -i
+```
+
+The package provides both `skm` and `skills`, so existing `skills` commands and scripts work with this fork.
+You can also run it without a global installation:
+
+```bash
+npx @gblab/skm list -i
+```
+
+For local development, run `pnpm install`, then `pnpm dev`.
 
 Agent skills are reusable instructions that teach coding agents how to perform tasks,
 from reviewing code to working with a library. Discover skills at [skills.sh](https://skills.sh).
@@ -24,7 +36,7 @@ Supports **OpenCode**, **Claude Code**, **Codex**, **Cursor**, and [75 more](doc
 Requires Node.js 22.20 or later. Run this from your project:
 
 ```bash
-npx skills add vercel-labs/agent-skills
+npx @gblab/skm add vercel-labs/agent-skills
 ```
 
 Choose the skills and coding agents to install to. Skills are installed to the current
@@ -32,10 +44,10 @@ project by default; add `-g` to make them available across projects.
 
 ```bash
 # Choose one skill and agent
-npx skills add vercel-labs/agent-skills --skill web-design-guidelines -a claude-code
+npx @gblab/skm add vercel-labs/agent-skills --skill web-design-guidelines -a claude-code
 
 # Browse available skills
-npx skills find
+npx @gblab/skm find
 ```
 
 See the [installation reference](docs/commands.md#skills-add) for source formats,
@@ -45,26 +57,26 @@ private repositories, and all options.
 
 | Command                           | Description                                 |
 | --------------------------------- | ------------------------------------------- |
-| `npx skills find [query]`         | Search for skills                           |
-| `npx skills install [source]`     | Restore a lockfile or install from a source |
-| `npx skills sync`                | Sync skills from npm dependencies           |
-| `npx skills prune [skills...]`    | Remove skills deleted upstream              |
-| `npx skills list -i`              | Manage skills interactively                 |
-| `npx skills list`                 | List installed skills                       |
-| `npx skills use <source>@<skill>` | Use one skill without installing            |
-| `npx skills check`                | Check for available updates                 |
-| `npx skills update [skills...]`   | Update installed skills                     |
-| `npx skills remove [skills...]`   | Remove installed skills                     |
-| `npx skills init [name]`          | Create a skill template                     |
+| `npx @gblab/skm find [query]`         | Search for skills                           |
+| `npx @gblab/skm install [source]`     | Restore a lockfile or install from a source |
+| `npx @gblab/skm sync`                | Sync skills from npm dependencies           |
+| `npx @gblab/skm prune [skills...]`    | Remove skills deleted upstream              |
+| `npx @gblab/skm list -i`              | Manage skills interactively                 |
+| `npx @gblab/skm list`                 | List installed skills                       |
+| `npx @gblab/skm use <source>@<skill>` | Use one skill without installing            |
+| `npx @gblab/skm check`                | Check for available updates                 |
+| `npx @gblab/skm update [skills...]`   | Update installed skills                     |
+| `npx @gblab/skm remove [skills...]`   | Remove installed skills                     |
+| `npx @gblab/skm init [name]`          | Create a skill template                     |
 
-Read the [CLI reference](docs/commands.md) or run `npx skills --help` for examples and options.
+Read the [CLI reference](docs/commands.md) or run `npx @gblab/skm --help` for examples and options.
 
 ## Use a Skill Without Installing
 
 Generate a prompt for a skill, or launch a supported coding agent with it:
 
 ```bash
-npx skills use vercel-labs/agent-skills@web-design-guidelines --agent claude-code
+npx @gblab/skm use vercel-labs/agent-skills@web-design-guidelines --agent claude-code
 ```
 
 Omit `--agent` to print the prompt instead. See [`skills use`](docs/commands.md#skills-use).
@@ -74,8 +86,8 @@ Omit `--agent` to print the prompt instead. See [`skills use`](docs/commands.md#
 Some npm packages bundle instructions for your agent alongside their code. Sync links them into your project so they update with the dependency, and also installs skill packs declared in `package.json`:
 
 ```bash
-npm install -D skills agent-browser
-npx skills sync -y
+npm install -D @gblab/skm agent-browser
+npx @gblab/skm sync -y
 ```
 
 See the [sync reference](docs/commands.md#skills-sync) for options, the `skills` field, and the [RFC](https://github.com/vercel-labs/skills/issues/2323) behind it.
@@ -115,7 +127,7 @@ See [all supported agents, installation paths, and compatibility](docs/agents.md
 ## Creating Skills
 
 ```bash
-npx skills init my-skill
+npx @gblab/skm init my-skill
 ```
 
 Edit the generated `SKILL.md` with instructions for your agent.
@@ -127,7 +139,9 @@ See [creating and sharing skills](docs/creating-skills.md) for the format and di
 - [Supported agents](docs/agents.md): agent names, skill directories, and compatibility
 - [Creating skills](docs/creating-skills.md): frontmatter, repository layouts, and plugins
 - [Troubleshooting and configuration](docs/troubleshooting.md): common problems, environment variables, and telemetry
-- [Programmatic API](docs/api.md): install and manage skills from your own tools with `import { installSkills } from 'skills'`
+- [Programmatic API](docs/api.md): install and manage skills from your own tools with `import { installSkills } from '@gblab/skm'`
+
+- [Release guide](docs/releasing.md): Changesets, publishing, and initial setup
 
 ## Telemetry
 

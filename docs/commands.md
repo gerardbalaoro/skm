@@ -2,43 +2,43 @@
 
 [Back to the README](../README.md)
 
-Run commands with `npx skills <command>`. For all available options, run `npx skills --help`.
+Run commands with `npx @gblab/skm <command>`. For all available options, run `npx @gblab/skm --help`.
 
 ## `skills add`
 
 Install skills from a repository, URL, or local directory:
 
 ```bash
-npx skills add vercel-labs/agent-skills
+npx @gblab/skm add vercel-labs/agent-skills
 ```
 
 ### Source Formats
 
 ```bash
 # GitHub shorthand (owner/repo)
-npx skills add vercel-labs/agent-skills
+npx @gblab/skm add vercel-labs/agent-skills
 
 # Pin a release tag or full commit. Skill names still use the same @ form.
-npx skills add owner/repo@v1.2.3 --skill my-skill
+npx @gblab/skm add owner/repo@v1.2.3 --skill my-skill
 
 # Full GitHub URL
-npx skills add https://github.com/vercel-labs/agent-skills
+npx @gblab/skm add https://github.com/vercel-labs/agent-skills
 
 # Direct path to a skill in a repo
-npx skills add https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines
+npx @gblab/skm add https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines
 
 # GitLab URL
-npx skills add https://gitlab.com/org/repo
+npx @gblab/skm add https://gitlab.com/org/repo
 
 # Azure Repos (Azure DevOps Services or Server)
-npx skills add https://dev.azure.com/org/project/_git/repo
-npx skills add https://dev.azure.com/org/project/_git/repo?path=/skills/web-design&version=GBmain
+npx @gblab/skm add https://dev.azure.com/org/project/_git/repo
+npx @gblab/skm add https://dev.azure.com/org/project/_git/repo?path=/skills/web-design&version=GBmain
 
 # Any git URL
-npx skills add git@github.com:vercel-labs/agent-skills.git
+npx @gblab/skm add git@github.com:vercel-labs/agent-skills.git
 
 # Local path
-npx skills add ./my-local-skills
+npx @gblab/skm add ./my-local-skills
 ```
 
 ### Private Repositories
@@ -47,15 +47,15 @@ Use the same command for public and private repositories. The CLI uses the authe
 
 ```bash
 # GitHub shorthand or HTTPS (Git credential helper, GitHub CLI, then SSH fallback)
-npx skills add acme/private-skills
+npx @gblab/skm add acme/private-skills
 
 # SSH on GitHub, GitLab, or another Git host
-npx skills add git@github.com:acme/private-skills.git
-npx skills add ssh://git@git.example.com/acme/private-skills.git
+npx @gblab/skm add git@github.com:acme/private-skills.git
+npx @gblab/skm add ssh://git@git.example.com/acme/private-skills.git
 
 # HTTPS on any Git host (uses your configured Git credential helper)
-npx skills add https://git.example.com/acme/private-skills.git
-npx skills add https://dev.azure.com/org/project/_git/private-skills
+npx @gblab/skm add https://git.example.com/acme/private-skills.git
+npx @gblab/skm add https://dev.azure.com/org/project/_git/private-skills
 ```
 
 For GitHub HTTPS and shorthand sources, `skills` first uses normal Git credentials. If that fails and GitHub CLI is authenticated, it tries `gh repo clone`, followed by SSH. It does not execute `gh auth token` or copy the stored GitHub CLI credential into the Node.js process.
@@ -81,31 +81,31 @@ For GitHub tree lookups, `skills` first tries the API anonymously, then an expli
 
 ```bash
 # List skills in a repository
-npx skills add vercel-labs/agent-skills --list
+npx @gblab/skm add vercel-labs/agent-skills --list
 
 # Install specific skills
-npx skills add vercel-labs/agent-skills --skill frontend-design --skill skill-creator
+npx @gblab/skm add vercel-labs/agent-skills --skill frontend-design --skill skill-creator
 
 # Install a skill with spaces in the name (must be quoted)
-npx skills add owner/repo --skill "Convex Best Practices"
+npx @gblab/skm add owner/repo --skill "Convex Best Practices"
 
 # Install to specific agents
-npx skills add vercel-labs/agent-skills -a claude-code -a opencode
+npx @gblab/skm add vercel-labs/agent-skills -a claude-code -a opencode
 
 # Non-interactive installation (CI/CD friendly)
-npx skills add vercel-labs/agent-skills --skill frontend-design -g -a claude-code -y
+npx @gblab/skm add vercel-labs/agent-skills --skill frontend-design -g -a claude-code -y
 
 # Install all skills from a repo to all agents
-npx skills add vercel-labs/agent-skills --all
+npx @gblab/skm add vercel-labs/agent-skills --all
 
 # Install all skills to specific agents
-npx skills add vercel-labs/agent-skills --skill '*' -a claude-code
+npx @gblab/skm add vercel-labs/agent-skills --skill '*' -a claude-code
 
 # Install specific skills to all agents
-npx skills add vercel-labs/agent-skills --agent '*' --skill frontend-design
+npx @gblab/skm add vercel-labs/agent-skills --agent '*' --skill frontend-design
 
 # Install from a direct SKILL.md or archive download URL
-npx skills add https://example.com/download/my-skill
+npx @gblab/skm add https://example.com/download/my-skill
 ```
 
 Direct download URLs are tried after well-known discovery. They may point to a single valid `SKILL.md` file or a `.zip`, `.tar`, `.tar.gz`, or `.tgz` archive; the URL does not need to include a file extension. Downloads are limited to 10 MiB, extracted content to 25 MiB, and archives to 1000 files by default. Override with `SKILLS_DOWNLOAD_MAX_BYTES`, `SKILLS_EXTRACT_MAX_BYTES`, and `SKILLS_EXTRACT_MAX_FILES` when you trust the source.
@@ -117,7 +117,7 @@ The lock file records a direct download as `sourceType: "download"` with its URL
 Two sources can publish skills with the same name, and installing the second one overwrites the first. Use `--rename` to install a skill under a name of your choice:
 
 ```bash
-npx skills add vercel-labs/json-render --skill shadcn --rename json-render-shadcn
+npx @gblab/skm add vercel-labs/json-render --skill shadcn --rename json-render-shadcn
 ```
 
 The new name is used for the skill folder, the lock file key, and the `name` field in the installed `SKILL.md`, so agents invoke the skill by the new name. The name must contain only lowercase letters, digits, `.`, `_`, and `-`. `--rename` works with one skill only: select it with `--skill` or `<source>@<skill>`.
@@ -146,16 +146,16 @@ Restore skills from a lockfile, or install skills from a source. The alias is `i
 
 ```bash
 # Restore missing project skills
-npx skills install
+npx @gblab/skm install
 
 # Restore missing global skills
-npx skills install -g
+npx @gblab/skm install -g
 
 # Preview a global restore
-npx skills install -g --dry-run
+npx @gblab/skm install -g --dry-run
 
 # Install from a source with the same options as add
-npx skills install owner/repo --skill my-skill -g
+npx @gblab/skm install owner/repo --skill my-skill -g
 ```
 
 Without a source, the command restores the selected lockfile. With a source, it uses
@@ -210,8 +210,8 @@ branch. Renamed skills keep their installed name when restored.
 1. Back up the global lockfile and any local skill edits.
 2. Copy the version 3 global lockfile to its global path on the destination machine.
 3. Configure credentials for private sources on the destination machine.
-4. Run `npx skills install -g --dry-run` to review the plan.
-5. Run `npx skills install -g` to restore missing skills.
+4. Run `npx @gblab/skm install -g --dry-run` to review the plan.
+5. Run `npx @gblab/skm install -g` to restore missing skills.
 
 Local source paths must exist on the destination machine. Preserve edited skills
 in a source you control before you replace their installed copies.
@@ -221,8 +221,8 @@ in a source you control before you replace their installed copies.
 Generate a prompt for one skill, or start a supported coding agent interactively:
 
 ```bash
-npx skills use vercel-labs/agent-skills@web-design-guidelines | claude
-npx skills use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code
+npx @gblab/skm use vercel-labs/agent-skills@web-design-guidelines | claude
+npx @gblab/skm use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code
 ```
 
 `skills use` resolves sources the same way as `skills add`, writes the selected skill files to a temporary directory, and prints only the generated prompt to stdout unless `--agent` is provided. With `--agent`, it starts one supported agent interactively with the generated prompt.
@@ -233,13 +233,13 @@ List all installed skills. Similar to `npm ls`.
 
 ```bash
 # List project installed skills
-npx skills list
+npx @gblab/skm list
 
 # List only global skills
-npx skills ls -g
+npx @gblab/skm ls -g
 
 # Filter by specific agents
-npx skills ls -a claude-code -a cursor
+npx @gblab/skm ls -a claude-code -a cursor
 ```
 
 Project skills are compared with `skills-lock.json`. A skill whose files no longer match
@@ -304,13 +304,13 @@ Search for skills interactively or by keyword.
 
 ```bash
 # Interactive search (fzf-style)
-npx skills find
+npx @gblab/skm find
 
 # Search by keyword
-npx skills find typescript
+npx @gblab/skm find typescript
 
 # Search across every repository owned by an organization or user
-npx skills find react --owner vercel
+npx @gblab/skm find react --owner vercel
 ```
 
 ## `skills check`
@@ -318,7 +318,7 @@ npx skills find react --owner vercel
 Check installed skills for available updates without reinstalling them:
 
 ```bash
-npx skills check
+npx @gblab/skm check
 ```
 
 The default scope is project. Use `-g` for global skills, including checks for named skills.
@@ -335,20 +335,20 @@ or `-g -p` for both scopes. Scripts that rely on scope detection must pass their
 
 ```bash
 # Update project skills (default scope)
-npx skills update
+npx @gblab/skm update
 
 # Update a single skill by name
-npx skills update my-skill
+npx @gblab/skm update my-skill
 
 # Update multiple specific skills
-npx skills update frontend-design web-design-guidelines
+npx @gblab/skm update frontend-design web-design-guidelines
 
 # Update only global or project skills
-npx skills update -g
-npx skills update -p
+npx @gblab/skm update -g
+npx @gblab/skm update -p
 
 # Non-interactive project update (use -g for global)
-npx skills update -y
+npx @gblab/skm update -y
 ```
 
 | Option          | Description                                          |
@@ -367,13 +367,13 @@ The default scope is project.
 
 ```bash
 # Preview project removals
-npx skills prune --dry-run
+npx @gblab/skm prune --dry-run
 
 # Review global removals interactively
-npx skills prune -g
+npx @gblab/skm prune -g
 
 # Remove one deleted skill when its local content is unchanged
-npx skills prune my-skill -y
+npx @gblab/skm prune my-skill -y
 ```
 
 | Option          | Description                                               |
@@ -402,10 +402,10 @@ the scoped remove operation. Concurrent edits during removal are not supported.
 
 ```bash
 # Create SKILL.md in current directory
-npx skills init
+npx @gblab/skm init
 
 # Create a new skill in a subdirectory
-npx skills init my-skill
+npx @gblab/skm init my-skill
 ```
 
 ## `skills remove`
@@ -414,34 +414,34 @@ Remove installed skills from agents.
 
 ```bash
 # Remove interactively (select from installed skills)
-npx skills remove
+npx @gblab/skm remove
 
 # Remove all skills from an exact lock source
-npx skills remove owner/repo
+npx @gblab/skm remove owner/repo
 
 # Remove specific skill by name
-npx skills remove web-design-guidelines
+npx @gblab/skm remove web-design-guidelines
 
 # Remove multiple skills
-npx skills remove frontend-design web-design-guidelines
+npx @gblab/skm remove frontend-design web-design-guidelines
 
 # Remove from global scope
-npx skills remove --global web-design-guidelines
+npx @gblab/skm remove --global web-design-guidelines
 
 # Remove from specific agents only
-npx skills remove --agent claude-code cursor my-skill
+npx @gblab/skm remove --agent claude-code cursor my-skill
 
 # Remove all lock-tracked skills without confirmation
-npx skills remove --all
+npx @gblab/skm remove --all
 
 # Remove all skills from a specific agent
-npx skills remove --skill '*' -a cursor
+npx @gblab/skm remove --skill '*' -a cursor
 
 # Remove a specific skill from all agents
-npx skills remove my-skill --agent '*'
+npx @gblab/skm remove my-skill --agent '*'
 
 # Use 'rm' alias
-npx skills rm my-skill
+npx @gblab/skm rm my-skill
 ```
 
 | Option         | Description                                      |
@@ -456,7 +456,7 @@ npx skills rm my-skill
 (`skills-lock.json` for a project, the global lock with `-g`). Skill folders
 the lock does not track, such as skills you wrote by hand, are listed as
 skipped and never deleted. To remove one of them, name it:
-`npx skills remove my-skill`.
+`npx @gblab/skm remove my-skill`.
 
 ## `skills sync`
 
@@ -466,8 +466,8 @@ The legacy `experimental_sync` command remains a compatibility alias.
 Install a package that ships skills, then sync them into your project:
 
 ```bash
-npm install -D skills agent-browser
-npx skills sync -y
+npm install -D @gblab/skm agent-browser
+npx @gblab/skm sync -y
 ```
 
 Sync reads installed dependencies declared in your project's `package.json`, including
@@ -481,7 +481,7 @@ The `.agents/skills/` directory is the shared location. Selecting Claude Code al
 creates links under `.claude/skills/` pointing to the shared skills:
 
 ```bash
-npx skills sync -a claude-code -y
+npx @gblab/skm sync -a claude-code -y
 ```
 
 Outside an agent, sync detects installed agents. When run inside a coding agent,

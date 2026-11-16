@@ -30,7 +30,7 @@ Ensure you have write access to the target directory.
 
 ```bash
 # Install internal skills
-INSTALL_INTERNAL_SKILLS=1 npx skills add vercel-labs/agent-skills --list
+INSTALL_INTERNAL_SKILLS=1 npx @gblab/skm add vercel-labs/agent-skills --list
 ```
 
 ## Telemetry

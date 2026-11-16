@@ -6,7 +6,7 @@ import { describe, expect, inject, it } from 'vitest';
 import { Sandbox, entries, isSymlink, readSkill, type JsonListEntry } from './sandbox.ts';
 
 /**
- * The programmatic API as a consumer sees it: `import ... from 'skills'` from the
+ * The programmatic API as a consumer sees it: `import ... from '@gblab/skm'` from the
  * installed tarball, run against live sources. Each call runs in its own child
  * process with the sandbox HOME (see Sandbox.api). Unit coverage of the options
  * lives in tests/api.test.ts; this suite checks the packaged entry, real fetches,
@@ -295,8 +295,8 @@ describe('programmatic API', () => {
     await writeFile(
       join(dir, 'consumer.ts'),
       [
-        "import { installSkills, isDiagnostic, listSkills, resolveSource, version } from 'skills';",
-        "import type { InstallResult, SkillsConfig, SkillSource } from 'skills';",
+        `import { installSkills, isDiagnostic, listSkills, resolveSource, version } from ${JSON.stringify(inject('packageName'))};`,
+        `import type { InstallResult, SkillsConfig, SkillSource } from ${JSON.stringify(inject('packageName'))};`,
         '',
         "const config: SkillsConfig = { scope: 'project', agents: { include: ['codex'] } };",
         'export async function run(cwd: string): Promise<string> {',

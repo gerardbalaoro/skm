@@ -1,7 +1,7 @@
 {
-  "name": "skills",
-  "version": "1.8.1",
-  "description": "The open agent skills ecosystem",
+  "name": "@gblab/skm",
+  "version": "0.1.0",
+  "description": "Agent skill management with a fullscreen terminal interface",
   "type": "module",
   "exports": {
     ".": {
@@ -13,15 +13,16 @@
   },
   "types": "./dist/index.d.mts",
   "bin": {
-    "skills": "./bin/cli.mjs",
-    "add-skill": "./bin/cli.mjs"
+    "skm": "./bin/cli.mjs",
+    "skills": "./bin/cli.mjs"
   },
   "files": [
     "dist",
     "bin",
     "docs",
     "README.md",
-    "ThirdPartyNoticeText.txt"
+    "ThirdPartyNoticeText.txt",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/generate-licenses.ts && obuild",
@@ -37,7 +38,11 @@
     "test": "vitest",
     "test:e2e": "vitest run --config e2e/vitest.config.ts",
     "type-check": "tsc --noEmit && tsc --noEmit -p e2e",
-    "publish:snapshot": "npm version prerelease --preid=snapshot --no-git-tag-version && npm publish --tag snapshot"
+    "publish:snapshot": "npm version prerelease --preid=snapshot --no-git-tag-version && npm publish --tag snapshot",
+    "changeset": "changeset",
+    "release:version": "changeset version && pnpm install --lockfile-only --ignore-scripts",
+    "release": "pnpm build && changeset publish",
+    "release:check": "pnpm format:check && pnpm type-check && vitest run && vitest run --config e2e/vitest.config.ts e2e/package.e2e.ts e2e/api.e2e.ts"
   },
   "lint-staged": {
     "src/**/*.ts": "prettier --write",
@@ -141,6 +146,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@clack/prompts": "^1.9.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
@@ -171,5 +177,9 @@
     "tar": "^7.5.22",
     "wrap-ansi": "^10.0.2",
     "yaml": "^2.9.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -102,7 +102,7 @@ export class Sandbox {
 
   /**
    * Run `body` as an async ES module function against the installed package's
-   * library entry (`import * as api from 'skills'`, resolved through its exports
+   * library entry (`import * as api from '@gblab/skm'`, resolved through its exports
    * map). Runs in a child process because agent paths are computed from HOME at
    * import time. `body` sees `api`, `project`, `home`, and `codeOf(promise)`
    * (the diagnostic code a promise rejects with, or null), and returns a
@@ -118,7 +118,7 @@ export class Sandbox {
       script,
       [
         "import { writeFileSync } from 'node:fs';",
-        "import * as api from 'skills';",
+        `import * as api from ${JSON.stringify(inject('packageName'))};`,
         'const [project, home, out] = process.argv.slice(2);',
         'async function codeOf(promise) {',
         '  try { await promise; return null; } catch (error) {',

@@ -11,8 +11,10 @@ declare module 'vitest' {
     e2eRoot: string;
     /** Absolute path to the installed package's bin script (run with `node`). */
     skillsBin: string;
-    /** Directory the package was installed into (`<dir>/node_modules/skills`). */
+    /** Directory the package was installed into (`<dir>/node_modules/@gblab/skm`). */
     installDir: string;
+    /** Actual package name installed from the tarball or registry spec. */
+    packageName: string;
     /** The packed tarball, or null when SKILLS_E2E_PACKAGE points at a registry spec. */
     tarball: string | null;
     /** Shared npm cache for every npm call in the run. */
@@ -28,7 +30,7 @@ function sh(cmd: string, args: string[], cwd: string, env?: NodeJS.ProcessEnv): 
 }
 
 /**
- * Pack the repo (or take SKILLS_E2E_PACKAGE, e.g. `skills@latest` or a .tgz path),
+ * Pack the repo (or take SKILLS_E2E_PACKAGE, e.g. `@gblab/skm@latest` or a .tgz path),
  * then `npm install` it into an empty prefix with a fresh HOME and no inherited
  * npm config, which is the closest local stand-in for a user's machine.
  */
@@ -61,7 +63,10 @@ export default async function setup(project: TestProject) {
     cleanEnv({ HOME: npmHome, USERPROFILE: npmHome, npm_config_cache: npmCache })
   );
 
-  const pkgDir = join(installDir, 'node_modules', 'skills');
+  const manifest = JSON.parse(await readFile(join(installDir, 'package.json'), 'utf8'));
+  const [packageName] = Object.keys(manifest.dependencies ?? {});
+  if (!packageName) throw new Error('Installed package name is missing');
+  const pkgDir = join(installDir, 'node_modules', packageName);
   const pkg = JSON.parse(await readFile(join(pkgDir, 'package.json'), 'utf8')) as {
     bin: Record<string, string>;
   };
@@ -70,6 +75,7 @@ export default async function setup(project: TestProject) {
   project.provide('e2eRoot', root);
   project.provide('skillsBin', skillsBin);
   project.provide('installDir', installDir);
+  project.provide('packageName', packageName);
   project.provide('tarball', tarball);
   project.provide('npmCache', npmCache);
 

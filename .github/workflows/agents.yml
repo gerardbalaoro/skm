@@ -5,7 +5,7 @@ on:
     paths:
       - "src/agents.ts"
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - "src/agents.ts"
 
@@ -37,7 +37,7 @@ jobs:
 
   sync-agents:
     needs: validate-agents
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
