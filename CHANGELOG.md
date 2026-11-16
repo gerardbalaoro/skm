@@ -1,5 +1,11 @@
 # @gblab/skm
 
+## 0.1.1
+
+### Patch Changes
+
+- e067c91: Make batch removal and updates easier in the fullscreen manager with visible checkboxes, select-all and clear shortcuts, and selections that persist across filters.
+
 ## 0.1.0
 
 ### Minor Changes
