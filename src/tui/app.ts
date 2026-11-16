@@ -85,6 +85,15 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
       const result = await services.load(global, agentFilter);
       if (mounted.current && version === generation.current) {
         setInventory(result);
+        setSelections((previous) => ({
+          ...previous,
+          Installed: new Set(
+            result.skills.filter((item) => previous.Installed.has(item.id)).map((item) => item.id)
+          ),
+          Sources: new Set(
+            result.sources.filter((item) => previous.Sources.has(item.id)).map((item) => item.id)
+          ),
+        }));
       }
     } catch (error) {
       if (mounted.current && version === generation.current) setLoadError(formatError(error));
@@ -116,7 +125,7 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
         );
   const current = items.find((item) => item.id === highlight[tab]) ?? items[0];
   const targets = selected.size
-    ? items.filter((item) => selected.has(item.id))
+    ? allItems.filter((item) => selected.has(item.id))
     : current
       ? [current]
       : [];
@@ -237,7 +246,7 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
   const submitSearch = async (value: string) => {
     setQueries((previous) => ({ ...previous, [tab]: value }));
     setMode('browse');
-    setSelected(new Set());
+    if (tab === 'Discover') setSelected(new Set());
     setNotice('');
     if (tab !== 'Discover') return;
     search.current?.abort();
@@ -337,6 +346,23 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
       void reload();
       return;
     }
+    if (loading) return;
+    if (input === 'a' && tab !== 'Discover') {
+      setSelected((previous) => {
+        const next = new Set(previous);
+        const allSelected = items.every((item) => next.has(item.id));
+        for (const item of items) {
+          if (allSelected) next.delete(item.id);
+          else next.add(item.id);
+        }
+        return next;
+      });
+      return;
+    }
+    if (input === 'x' && tab !== 'Discover') {
+      setSelected(new Set());
+      return;
+    }
     if (input === ' ' && current && tab !== 'Discover') {
       setSelected((previous) => {
         const next = new Set(previous);
@@ -383,7 +409,7 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
       h(
         Text,
         {},
-        '\n↑↓ or j/k    Move through skills\nEnter        Actions for the selection\n/            Filter or search\nTab / ⇧Tab   Switch tabs\ng            Switch project/global\nSpace        Select multiple skills\nPgUp/PgDn    Scroll details or output\nc / u / d    Check / update / remove\ni            Inspect or install\nr            Refresh\n\nEsc back     q quit'
+        '\n↑↓ or j/k    Move through skills\nEnter        Actions for the selection\n/            Filter or search\nTab / ⇧Tab   Switch tabs\ng            Switch project/global\nSpace        Toggle selection\na            Toggle all filtered rows\nx            Clear selection\nPgUp/PgDn    Scroll details or output\nc / u / d    Check / update / remove\ni            Inspect or install\nr            Refresh\n\nEsc back     q quit'
       )
     );
   } else if (mode === 'search') {
@@ -523,7 +549,7 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
             ? h(SelectInput<string>, {
                 key: `${global}:${view}:${queries[view]}:${listHeight}:${JSON.stringify(visible.map((item) => item.id))}`,
                 items: visible.map((item) => ({
-                  label: `${selections[view].has(item.id) ? '✓ ' : ''}${item.name}${item.status === 'modified' ? ' · local changes' : item.status === 'missing' ? ' · missing' : view === 'Sources' ? ` · ${item.status}` : ''}`,
+                  label: `${view === 'Discover' ? '' : selections[view].has(item.id) ? '[x] ' : '[ ] '}${item.name}${item.status === 'modified' ? ' · local changes' : item.status === 'missing' ? ' · missing' : view === 'Sources' ? ` · ${item.status}` : ''}`,
                   value: item.id,
                 })),
                 limit: Math.max(1, listHeight),
@@ -612,7 +638,9 @@ export function ManagerApp({ services, global: initialGlobal, agentFilter }: Man
             ? busy
               ? 'Esc cancel    Ctrl+C quit'
               : '↑↓ scroll    Esc back    q quit'
-            : `↑↓ move    Enter actions    / ${tab === 'Discover' ? 'search' : 'filter'}    Tab switch    ? help    q quit`;
+            : tab === 'Discover'
+              ? '↑↓ move    Enter actions    / search    Tab switch    ? help    q quit'
+              : 'Space select · a all · x clear · u update · d remove · Enter actions · ? help';
   return h(
     Box,
     {

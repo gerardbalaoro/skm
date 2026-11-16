@@ -200,6 +200,88 @@ describe('fullscreen manager navigation and operations', () => {
     await press(app, '\u001b');
     await vi.waitFor(() => expect(app.lastFrame()).toContain('Version: 3.0'));
   });
+  it.each(['remove', 'update'] as const)(
+    'runs batch %s for selections kept across filters',
+    async (action) => {
+      const app = await start();
+      expect(app.lastFrame()).toContain('Space select');
+      await press(app, ' ');
+      await press(app, '/');
+      await press(app, 'beta');
+      await press(app, '\r');
+      expect(app.lastFrame()).toContain('1 selected');
+      await press(app, 'a');
+      expect(app.lastFrame()).toContain('2 selected');
+      await press(app, action === 'remove' ? 'd' : 'u');
+      expect(app.lastFrame()).toContain(`Confirm ${action} · Project`);
+      expect(app.lastFrame()).toContain('alpha, beta');
+      expect(services.run).not.toHaveBeenCalled();
+      await press(app, '\u001b[A');
+      await press(app, '\r');
+      await vi.waitFor(() =>
+        expect(services.run).toHaveBeenCalledWith(
+          action,
+          [alpha, beta],
+          false,
+          expect.any(Function),
+          expect.any(AbortSignal)
+        )
+      );
+      await press(app, '\u001b');
+      expect(app.lastFrame()).not.toContain('selected');
+    }
+  );
+  it('toggles all visible selections and clears the entire batch', async () => {
+    const app = await start();
+    await press(app, 'a');
+    expect(app.lastFrame()).toContain('2 selected');
+    expect(app.lastFrame()).toContain('[x] alpha');
+    expect(app.lastFrame()).toContain('[x] beta');
+    await press(app, 'a');
+    expect(app.lastFrame()).not.toContain('selected');
+    await press(app, ' ');
+    await press(app, '/');
+    await press(app, 'beta');
+    await press(app, '\r');
+    await press(app, 'a');
+    expect(app.lastFrame()).toContain('2 selected');
+    await press(app, 'a');
+    expect(app.lastFrame()).toContain('1 selected');
+    await press(app, 'x');
+    expect(app.lastFrame()).not.toContain('selected');
+    await press(app, 'd');
+    expect(app.lastFrame()).toContain('1 skill(s)');
+    expect(app.lastFrame()).not.toContain('alpha');
+    await press(app, '\r');
+    expect(services.run).not.toHaveBeenCalled();
+  });
+  it('removes multiple selected source groups in one operation', async () => {
+    const other = {
+      ...source,
+      id: 'other/repo',
+      name: 'other/repo',
+      names: ['gamma'],
+      trackedNames: ['gamma'],
+    };
+    services.load = vi.fn().mockResolvedValue({ skills: [alpha, beta], sources: [source, other] });
+    const app = await start(true);
+    await press(app, '\t');
+    await press(app, '\t');
+    await press(app, 'a');
+    await press(app, 'd');
+    expect(app.lastFrame()).toContain('3 skill(s)');
+    await press(app, '\u001b[A');
+    await press(app, '\r');
+    await vi.waitFor(() =>
+      expect(services.run).toHaveBeenCalledWith(
+        'remove',
+        [source, other],
+        true,
+        expect.any(Function),
+        expect.any(AbortSignal)
+      )
+    );
+  });
   it('checks a selected source using its tracked skill names without confirmation', async () => {
     const app = await start(true);
     await press(app, '\t');

@@ -269,7 +269,9 @@ appear only in Discover. Press `?` for the full shortcut list.
 | Tab / Shift+Tab or Left/Right | Switch tabs and preserve the highlighted item                     |
 | /                             | Filter Installed or Sources, or enter a Discover query            |
 | Enter                         | Apply a query or open the selected item's actions                 |
-| Space                         | Select multiple installed skills or source groups                 |
+| Space                         | Toggle selection of an installed skill or source group            |
+| a                             | Select/deselect all rows matching the current filter              |
+| x                             | Clear the selection in the current tab                            |
 | PgUp / PgDn                   | Scroll details or action output                                   |
 | c / u / d                     | Check, update, or remove the selection                            |
 | i                             | Read SKILL.md, or install a Discover result                       |
@@ -283,6 +285,12 @@ Discover searches skills.sh after you submit a query. Browsing Installed and Sou
 uses local records. Installs, updates, and removals require confirmation, with Cancel
 selected by default. Action output stays inside the manager. A source action applies
 to that source's skills in the selected scope. Removal includes all agents in that scope.
+
+Select several skills with Space, or press `a` to select all filtered rows, then
+press `u` to update or `d` to remove the batch. Checkboxes mark selected rows and
+the footer shows the total selected count. Selections survive filter changes, so
+hidden selected rows are included in the confirmation and operation. Press `x`
+to clear the batch. With no selection, actions apply to the highlighted row.
 
 The default pane shows a brief description and any known source and version or revision.
 The full description remains available under **Show full details**.
